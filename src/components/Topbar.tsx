@@ -17,7 +17,7 @@ export function Topbar({ user, darkMode, onToggleDark, onSignOut }: Props) {
     <header className="topbar">
       <div className="topbar-brand">
         <div className="topbar-logo">
-          <img src="/Logo-SP-Mireval 1.jpg" alt="Logo" />
+          <img src="/planning-pompiers/Logo-SP-Mireval 1.jpg" alt="Logo" />
         </div>
         <span className="topbar-title">Planning 2026</span>
       </div>
