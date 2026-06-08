@@ -6,7 +6,7 @@ export function AuthScreen({ authReady }: { authReady: boolean }) {
       <div className="auth-bg-grid" />
       <div className="auth-card">
         <div className="auth-emblem">
-          <img src=".planning-pompiers/Logo-SP-Mireval 1.jpg" />
+          <img src="/planning-pompiers/Logo-SP-Mireval 1.jpg" />
         </div>
         <h1 className="auth-title">Planning Gardes 2026</h1>
         <p className="auth-sub">Connecte-toi avec ton compte Google pour accéder au planning des gardes et astreintes.</p>
