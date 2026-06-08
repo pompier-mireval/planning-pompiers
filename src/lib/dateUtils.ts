@@ -70,7 +70,7 @@ export const DISPO_LABELS: Record<string, string> = { J: 'Journée', M: 'Matin',
 
 export const TYPES_GARDE = [
   'GRR Journée', 'GRR Matin', 'GRR Après-midi',
-  'AST Journée', 'AST Matin',
+  'AST Journée', 'AST Matin', 'AST Après-midi',
   'VPF', 'GFF', 'Cond. CDG',
 ];
 
