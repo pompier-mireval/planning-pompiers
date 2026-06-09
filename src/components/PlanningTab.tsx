@@ -4,7 +4,7 @@ import {
   offsetToDate, todayOffset, weekStart, weekRangeLabel,
   getEquipe, affectClass, DISPO_LABELS, capitalize, MAX_OFFSET,
 } from '../lib/dateUtils';
-import { EquipeBadge, EquityBar, QualifBadges, WeekNav, AffectBadge } from './UI';
+import { EquipeBadge, EquityBar, EquityBarAst, QualifBadges, WeekNav, AffectBadge } from './UI';
 import { AffectModal } from './AffectModal';
 
 interface Props {
@@ -37,10 +37,13 @@ export function PlanningTab({ data, onAffect }: Props) {
   const dayCells = cells[dayOffset] || {};
   const today    = todayOffset();
 
-  // Moyenne des % garde depuis Gestion 2026
-  const gestionValues = agents.map(a => gestion[a.name.toLowerCase()]?.pctGarde ?? 0);
-  const avgGarde = gestionValues.length
-    ? gestionValues.reduce((s, v) => s + v, 0) / gestionValues.length
+  // Moyennes depuis Gestion 2026
+  const allGestion = agents.map(a => gestion[a.name.toLowerCase()] ?? null);
+  const avgGarde     = allGestion.filter(Boolean).length
+    ? allGestion.reduce((s, g) => s + (g?.pctGarde ?? 0), 0) / allGestion.filter(Boolean).length
+    : 0;
+  const avgAstreinte = allGestion.filter(Boolean).length
+    ? allGestion.reduce((s, g) => s + (g?.pctAstreinte ?? 0), 0) / allGestion.filter(Boolean).length
     : 0;
 
   const available = agents
@@ -116,7 +119,7 @@ export function PlanningTab({ data, onAffect }: Props) {
         {available.length === 0 ? (
           <div className="empty-state">Aucun agent disponible ce jour</div>
         ) : available.map(a => (
-          <div key={a.idx} className="agent-row">
+          <div key={a.idx} className="agent-row agent-row-dual">
             <div className="agent-info">
               <span className="agent-name">{a.name}</span>
               <div className="agent-badges">
@@ -124,7 +127,7 @@ export function PlanningTab({ data, onAffect }: Props) {
                 <span className="dispo-label">{DISPO_LABELS[a.cell!.dispo] ?? a.cell!.dispo}</span>
               </div>
             </div>
-            {/* Utilise pctGarde de Gestion 2026 si dispo, sinon rate local */}
+            {/* Jauge garde */}
             {a.g ? (
               <EquityBar pctGarde={a.g.pctGarde} avgGarde={avgGarde} />
             ) : (
@@ -132,6 +135,12 @@ export function PlanningTab({ data, onAffect }: Props) {
                 rate={a.stat.rate}
                 maxRate={Math.max(...agents.map(ag => stats[ag.idx]?.rate ?? 0), 0.01)}
               />
+            )}
+            {/* Jauge astreinte */}
+            {a.g ? (
+              <EquityBarAst pctAstreinte={a.g.pctAstreinte} avgAstreinte={avgAstreinte} />
+            ) : (
+              <span className="equity-bar-wrap" />
             )}
             {a.cell?.affect ? (
               <AffectBadge

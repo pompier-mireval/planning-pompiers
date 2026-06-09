@@ -58,7 +58,28 @@ export function EquityBar({ rate = 0, maxRate = 1, pctGarde, avgGarde }: EquityB
   );
 }
 
-// ── Small badges ──────────────────────────────────────────────
+// ── Equity bar (astreinte) ────────────────────────────────────
+
+interface EquityBarAstProps {
+  pctAstreinte: number;
+  avgAstreinte: number;
+}
+
+export function EquityBarAst({ pctAstreinte, avgAstreinte }: EquityBarAstProps) {
+  const usedMax = Math.max(pctAstreinte, avgAstreinte, 0.01) * 1.5;
+  const fillW   = Math.round((pctAstreinte / usedMax) * 100);
+  const cls     = pctAstreinte < avgAstreinte * 0.8 ? 'fill-low'
+                : pctAstreinte < avgAstreinte * 1.2 ? 'fill-mid'
+                : 'fill-high';
+  return (
+    <div className="equity-bar-wrap">
+      <div className="equity-bar equity-bar-ast">
+        <div className={`equity-fill ${cls}`} style={{ width: fillW + '%' }} />
+      </div>
+      <span className="equity-pct equity-pct-ast">{Math.round(pctAstreinte * 100)}%</span>
+    </div>
+  );
+}
 
 export function QualifBadges({ soff, cond }: { soff: boolean; cond: boolean }) {
   return (
