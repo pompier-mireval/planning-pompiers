@@ -556,6 +556,8 @@ select { font-family: inherit; }
   display: flex;
   align-items: center;
   gap: 7px;
+  width: 101px;
+  flex-shrink: 0;
 }
 
 .equity-bar {
@@ -625,6 +627,8 @@ select { font-family: inherit; }
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--green);
+  /* même largeur que equity-bar-wrap : barre 64px + gap 7px + pct min-width 30px */
+  width: 101px;
   text-align: center;
   white-space: nowrap;
 }
