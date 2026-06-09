@@ -119,8 +119,14 @@ export function PlanningTab({ data, onAffect }: Props) {
         {available.length > 0 && (
           <div className="agent-row agent-row-dual agent-row-header">
             <span />
-            <span className="gauge-col-label">Garde</span>
-            <span className="gauge-col-label gauge-col-label-ast">Astreinte</span>
+            <div className="gauge-col-label">
+              <span>Garde</span>
+              <span className="gauge-col-avg">moy. {Math.round(avgGarde * 100)}%</span>
+            </div>
+            <div className="gauge-col-label gauge-col-label-ast">
+              <span>Astreinte</span>
+              <span className="gauge-col-avg">{Math.round(avgAstreinte * 100)}%</span>
+            </div>
             <span />
           </div>
         )}
