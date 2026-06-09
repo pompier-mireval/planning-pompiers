@@ -37,14 +37,17 @@ export function PlanningTab({ data, onAffect }: Props) {
   const dayCells = cells[dayOffset] || {};
   const today    = todayOffset();
 
-  // Moyennes depuis Gestion 2026
+  // Moyennes et max depuis Gestion 2026
   const allGestion = agents.map(a => gestion[a.name.toLowerCase()] ?? null);
-  const avgGarde     = allGestion.filter(Boolean).length
-    ? allGestion.reduce((s, g) => s + (g?.pctGarde ?? 0), 0) / allGestion.filter(Boolean).length
+  const gestionValid = allGestion.filter(Boolean);
+  const avgGarde     = gestionValid.length
+    ? gestionValid.reduce((s, g) => s + (g?.pctGarde ?? 0), 0) / gestionValid.length
     : 0;
-  const avgAstreinte = allGestion.filter(Boolean).length
-    ? allGestion.reduce((s, g) => s + (g?.pctAstreinte ?? 0), 0) / allGestion.filter(Boolean).length
+  const avgAstreinte = gestionValid.length
+    ? gestionValid.reduce((s, g) => s + (g?.pctAstreinte ?? 0), 0) / gestionValid.length
     : 0;
+  const maxGarde     = Math.max(...gestionValid.map(g => g?.pctGarde ?? 0), 0.01);
+  const maxAstreinte = Math.max(...gestionValid.map(g => g?.pctAstreinte ?? 0), 0.01);
 
   const available = agents
     .map(a => ({
@@ -143,7 +146,7 @@ export function PlanningTab({ data, onAffect }: Props) {
             </div>
             {/* Jauge garde */}
             {a.g ? (
-              <EquityBar pctGarde={a.g.pctGarde} avgGarde={avgGarde} />
+              <EquityBar pctGarde={a.g.pctGarde} avgGarde={avgGarde} maxGarde={maxGarde} />
             ) : (
               <EquityBar
                 rate={a.stat.rate}
@@ -152,7 +155,7 @@ export function PlanningTab({ data, onAffect }: Props) {
             )}
             {/* Jauge astreinte */}
             {a.g ? (
-              <EquityBarAst pctAstreinte={a.g.pctAstreinte} avgAstreinte={avgAstreinte} />
+              <EquityBarAst pctAstreinte={a.g.pctAstreinte} avgAstreinte={avgAstreinte} maxAstreinte={maxAstreinte} />
             ) : (
               <span className="equity-bar-wrap" />
             )}

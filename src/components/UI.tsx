@@ -29,23 +29,23 @@ export function AffectBadge({ affect, onClick }: { affect: string; onClick?: () 
 }
 
 // ── Equity bar (garde) ─────────────────────────────────────────
-// Accepte soit rate/maxRate (calcul local) soit pctGarde/avgGarde (depuis Gestion 2026)
 
 interface EquityBarProps {
   // Source locale (fallback)
   rate?: number;
   maxRate?: number;
-  // Source Gestion 2026 (prioritaire si fourni)
+  // Source Gestion 2026
   pctGarde?: number;
   avgGarde?: number;
+  maxGarde?: number;
 }
 
-export function EquityBar({ rate = 0, maxRate = 1, pctGarde, avgGarde }: EquityBarProps) {
+export function EquityBar({ rate = 0, maxRate = 1, pctGarde, avgGarde, maxGarde }: EquityBarProps) {
   const usedPct = pctGarde !== undefined ? pctGarde : rate;
-  const usedMax = pctGarde !== undefined ? Math.max(pctGarde, avgGarde ?? 0.01, 0.01) * 1.5 : maxRate;
+  const usedMax = pctGarde !== undefined ? Math.max(maxGarde ?? usedPct, 0.01) : maxRate;
   const usedAvg = pctGarde !== undefined ? (avgGarde ?? 0) : (maxRate * 0.5);
 
-  const fillW = usedMax > 0 ? Math.round((usedPct / usedMax) * 100) : 0;
+  const fillW = usedMax > 0 ? Math.min(100, Math.round((usedPct / usedMax) * 100)) : 0;
   const cls = usedPct < usedAvg * 0.8 ? 'fill-low' : usedPct < usedAvg * 1.2 ? 'fill-mid' : 'fill-high';
 
   return (
@@ -63,11 +63,12 @@ export function EquityBar({ rate = 0, maxRate = 1, pctGarde, avgGarde }: EquityB
 interface EquityBarAstProps {
   pctAstreinte: number;
   avgAstreinte: number;
+  maxAstreinte: number;
 }
 
-export function EquityBarAst({ pctAstreinte, avgAstreinte }: EquityBarAstProps) {
-  const usedMax = Math.max(pctAstreinte, avgAstreinte, 0.01) * 1.5;
-  const fillW   = Math.round((pctAstreinte / usedMax) * 100);
+export function EquityBarAst({ pctAstreinte, avgAstreinte, maxAstreinte }: EquityBarAstProps) {
+  const usedMax = Math.max(maxAstreinte, 0.01);
+  const fillW   = Math.min(100, Math.round((pctAstreinte / usedMax) * 100));
   const cls     = pctAstreinte < avgAstreinte * 0.8 ? 'fill-low'
                 : pctAstreinte < avgAstreinte * 1.2 ? 'fill-mid'
                 : 'fill-high';
