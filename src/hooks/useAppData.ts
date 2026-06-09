@@ -1,13 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { loadAgents, loadSaisonData, parseSaisonData, saveCellValue } from '../lib/sheets';
+import { loadAgents, loadSaisonData, parseSaisonData, saveCellValue, loadGestionData } from '../lib/sheets';
 import { todayOffset } from '../lib/dateUtils';
-import type { Agent, CellMap, GardeMap, AgentStats } from '../lib/types';
+import type { Agent, CellMap, GardeMap, AgentStats, GestionMap } from '../lib/types';
 
 export interface AppData {
   agents: Agent[];
   cells:  CellMap;
   gardes: GardeMap;
   stats:  Record<number, AgentStats>;
+  gestion: GestionMap;
 }
 
 function computeStats(agents: Agent[], cells: CellMap): Record<number, AgentStats> {
@@ -38,14 +39,17 @@ export function useAppData() {
   const refresh = useCallback(async (silent = false) => {
     if (!silent) { setLoading(true); setError(null); }
     try {
-      const agents = await loadAgents();
-      const rows   = await loadSaisonData();
+      const [agents, rows, gestion] = await Promise.all([
+        loadAgents(),
+        loadSaisonData(),
+        loadGestionData(),
+      ]);
       const { cells, gardes } = parseSaisonData(rows, agents);
       const stats  = computeStats(agents, cells);
-      const next   = { agents, cells, gardes, stats };
+      const next   = { agents, cells, gardes, stats, gestion };
       setData(prev => {
-        // Pas de re-render si les cellules n'ont pas changé
-        if (prev && JSON.stringify(prev.cells) === JSON.stringify(next.cells)) return prev;
+        if (prev && JSON.stringify(prev.cells) === JSON.stringify(next.cells)
+                 && JSON.stringify(prev.gestion) === JSON.stringify(next.gestion)) return prev;
         return next;
       });
     } catch (e: any) {

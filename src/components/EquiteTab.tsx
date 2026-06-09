@@ -5,15 +5,45 @@ import { QualifBadges } from './UI';
 interface Props { data: AppData; }
 
 export function EquiteTab({ data }: Props) {
-  const { agents, stats } = data;
+  const { agents, gestion } = data;
 
-  const sorted = [...agents]
-    .map(a => ({ ...a, s: stats[a.idx] ?? { gardes: 0, dispos: 0, rate: 0 } }))
-    .sort((a, b) => a.s.rate - b.s.rate);
+  // Construire la liste enrichie depuis Gestion 2026
+  const enriched = agents.map(a => {
+    const g = gestion[a.name.toLowerCase()] ?? {
+      joursDispos: 0, nbGardes: 0, pctGarde: 0,
+      nbAstreintes: 0, pctAstreinte: 0, moyEquipe: 0, ecart: 0,
+    };
+    return { ...a, g };
+  });
 
-  const totalGardes = sorted.reduce((s, a) => s + a.s.gardes, 0);
-  const avgRate     = sorted.length ? sorted.reduce((s, a) => s + a.s.rate, 0) / sorted.length : 0;
-  const maxRate     = Math.max(...sorted.map(a => a.s.rate), 0.01);
+  // Trier par % garde croissant
+  const sorted = [...enriched].sort((a, b) => a.g.pctGarde - b.g.pctGarde);
+
+  const totalGardes    = sorted.reduce((s, a) => s + a.g.nbGardes, 0);
+  const totalAstreintes = sorted.reduce((s, a) => s + a.g.nbAstreintes, 0);
+  const avgGarde       = sorted.length ? sorted.reduce((s, a) => s + a.g.pctGarde, 0) / sorted.length : 0;
+  const avgAstreinte   = sorted.length ? sorted.reduce((s, a) => s + a.g.pctAstreinte, 0) / sorted.length : 0;
+
+  const maxGarde     = Math.max(...sorted.map(a => a.g.pctGarde), 0.01);
+  const maxAstreinte = Math.max(...sorted.map(a => a.g.pctAstreinte), 0.01);
+
+  function gardeColorCls(pct: number) {
+    if (pct < avgGarde * 0.8)   return 'fill-low';
+    if (pct < avgGarde * 1.2)   return 'fill-mid';
+    return 'fill-high';
+  }
+
+  function astrColorCls(pct: number) {
+    if (pct < avgAstreinte * 0.8)   return 'fill-low';
+    if (pct < avgAstreinte * 1.2)   return 'fill-mid';
+    return 'fill-high';
+  }
+
+  function pctColorCls(pct: number, avg: number) {
+    if (pct < avg * 0.8)   return 'pct-low';
+    if (pct < avg * 1.2)   return 'pct-mid';
+    return 'pct-high';
+  }
 
   return (
     <div className="tab-content">
@@ -28,33 +58,66 @@ export function EquiteTab({ data }: Props) {
           <div className="stat-label">Gardes</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{Math.round(avgRate * 100)}%</div>
-          <div className="stat-label">Taux moyen</div>
+          <div className="stat-value">{Math.round(avgGarde * 100)}%</div>
+          <div className="stat-label">Taux garde moy.</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{totalAstreintes}</div>
+          <div className="stat-label">Astreintes</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{Math.round(avgAstreinte * 100)}%</div>
+          <div className="stat-label">Taux astreinte moy.</div>
         </div>
       </div>
 
       <div className="card">
-        <div className="card-title">Équité gardes / dispos</div>
+        <div className="card-title">Équité gardes &amp; astreintes (source : Gestion 2026)</div>
+
+        {/* Légende colonnes */}
+        <div className="equite-header-row">
+          <span className="eq-rank" />
+          <div className="agent-info" />
+          <span className="eq-count-label">Gardes</span>
+          <div className="equity-col-label">% garde</div>
+          <span className="eq-count-label">Astreintes</span>
+          <div className="equity-col-label">% astreinte</div>
+        </div>
+
         {sorted.map((a, rank) => {
-          const pct   = Math.round(a.s.rate * 100);
-          const fillW = Math.round((a.s.rate / maxRate) * 100);
-          const cls   = a.s.rate < avgRate * 0.8 ? 'fill-low' : a.s.rate < avgRate * 1.2 ? 'fill-mid' : 'fill-high';
-          const pctCls = a.s.rate < avgRate * 0.8 ? 'pct-low' : a.s.rate < avgRate * 1.2 ? 'pct-mid' : 'pct-high';
+          const gPct   = Math.round(a.g.pctGarde * 100);
+          const gFillW = Math.round((a.g.pctGarde / maxGarde) * 100);
+          const aPct   = Math.round(a.g.pctAstreinte * 100);
+          const aFillW = Math.round((a.g.pctAstreinte / maxAstreinte) * 100);
 
           return (
-            <div key={a.idx} className="equite-row">
+            <div key={a.idx} className="equite-row equite-row-double">
               <span className="eq-rank">#{rank + 1}</span>
+
               <div className="agent-info">
                 <span className="agent-name">{a.name}</span>
                 <div className="agent-badges">
                   <QualifBadges soff={a.soff} cond={a.cond} />
                 </div>
               </div>
-              <span className="eq-count">{a.s.gardes}G / {a.s.dispos}D</span>
-              <div className="equity-bar">
-                <div className={`equity-fill ${cls}`} style={{ width: fillW + '%' }} />
+
+              {/* Colonne Gardes */}
+              <span className="eq-count">{a.g.nbGardes}G / {a.g.joursDispos}D</span>
+              <div className="equity-double-col">
+                <div className="equity-bar">
+                  <div className={`equity-fill ${gardeColorCls(a.g.pctGarde)}`} style={{ width: gFillW + '%' }} />
+                </div>
+                <span className={`eq-pct-val ${pctColorCls(a.g.pctGarde, avgGarde)}`}>{gPct}%</span>
               </div>
-              <span className={`eq-pct-val ${pctCls}`}>{pct}%</span>
+
+              {/* Colonne Astreintes */}
+              <span className="eq-count">{a.g.nbAstreintes}A</span>
+              <div className="equity-double-col">
+                <div className="equity-bar equity-bar-ast">
+                  <div className={`equity-fill ${astrColorCls(a.g.pctAstreinte)}`} style={{ width: aFillW + '%' }} />
+                </div>
+                <span className={`eq-pct-val ${pctColorCls(a.g.pctAstreinte, avgAstreinte)}`}>{aPct}%</span>
+              </div>
             </div>
           );
         })}

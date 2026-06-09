@@ -28,17 +28,32 @@ export function AffectBadge({ affect, onClick }: { affect: string; onClick?: () 
   );
 }
 
-// ── Equity bar ────────────────────────────────────────────────
+// ── Equity bar (garde) ─────────────────────────────────────────
+// Accepte soit rate/maxRate (calcul local) soit pctGarde/avgGarde (depuis Gestion 2026)
 
-export function EquityBar({ rate, maxRate }: { rate: number; maxRate: number }) {
-  const fillW = maxRate > 0 ? Math.round((rate / maxRate) * 100) : 0;
-  const cls = rate < 0.3 ? 'fill-low' : rate < 0.55 ? 'fill-mid' : 'fill-high';
+interface EquityBarProps {
+  // Source locale (fallback)
+  rate?: number;
+  maxRate?: number;
+  // Source Gestion 2026 (prioritaire si fourni)
+  pctGarde?: number;
+  avgGarde?: number;
+}
+
+export function EquityBar({ rate = 0, maxRate = 1, pctGarde, avgGarde }: EquityBarProps) {
+  const usedPct = pctGarde !== undefined ? pctGarde : rate;
+  const usedMax = pctGarde !== undefined ? Math.max(pctGarde, avgGarde ?? 0.01, 0.01) * 1.5 : maxRate;
+  const usedAvg = pctGarde !== undefined ? (avgGarde ?? 0) : (maxRate * 0.5);
+
+  const fillW = usedMax > 0 ? Math.round((usedPct / usedMax) * 100) : 0;
+  const cls = usedPct < usedAvg * 0.8 ? 'fill-low' : usedPct < usedAvg * 1.2 ? 'fill-mid' : 'fill-high';
+
   return (
     <div className="equity-bar-wrap">
       <div className="equity-bar">
         <div className={`equity-fill ${cls}`} style={{ width: fillW + '%' }} />
       </div>
-      <span className="equity-pct">{Math.round(rate * 100)}%</span>
+      <span className="equity-pct">{Math.round(usedPct * 100)}%</span>
     </div>
   );
 }

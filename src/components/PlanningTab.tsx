@@ -26,7 +26,7 @@ export function PlanningTab({ data, onAffect }: Props) {
   const [wStart, setWStart]         = useState(() => weekStart(todayOffset()));
   const [modal, setModal]           = useState<ModalState>({ open: false, agentIdx: 0, agentName: '', dispo: '', dayOffset: 0 });
 
-  const { agents, cells, gardes, stats } = data;
+  const { agents, cells, gardes, stats, gestion } = data;
 
   const weekDays: number[] = [];
   for (let i = 0; i < 7; i++) {
@@ -36,12 +36,27 @@ export function PlanningTab({ data, onAffect }: Props) {
 
   const dayCells = cells[dayOffset] || {};
   const today    = todayOffset();
-  const maxRate  = Math.max(...agents.map(a => stats[a.idx]?.rate ?? 0), 0.01);
+
+  // Moyenne des % garde depuis Gestion 2026
+  const gestionValues = agents.map(a => gestion[a.name.toLowerCase()]?.pctGarde ?? 0);
+  const avgGarde = gestionValues.length
+    ? gestionValues.reduce((s, v) => s + v, 0) / gestionValues.length
+    : 0;
 
   const available = agents
-    .map(a => ({ ...a, cell: dayCells[a.idx] ?? null, stat: stats[a.idx] ?? { gardes: 0, dispos: 0, rate: 0 } }))
+    .map(a => ({
+      ...a,
+      cell: dayCells[a.idx] ?? null,
+      stat: stats[a.idx] ?? { gardes: 0, dispos: 0, rate: 0 },
+      g:    gestion[a.name.toLowerCase()] ?? null,
+    }))
     .filter(a => a.cell?.dispo)
-    .sort((a, b) => a.stat.rate - b.stat.rate);
+    .sort((a, b) => {
+      // Trier par % garde Gestion si dispo, sinon par rate local
+      const pA = a.g?.pctGarde ?? a.stat.rate;
+      const pB = b.g?.pctGarde ?? b.stat.rate;
+      return pA - pB;
+    });
 
   function openModal(agentIdx: number, agentName: string, dispo: string, offset: number, currentAffect?: string) {
     setModal({ open: true, agentIdx, agentName, dispo, dayOffset: offset, currentAffect });
@@ -109,7 +124,15 @@ export function PlanningTab({ data, onAffect }: Props) {
                 <span className="dispo-label">{DISPO_LABELS[a.cell!.dispo] ?? a.cell!.dispo}</span>
               </div>
             </div>
-            <EquityBar rate={a.stat.rate} maxRate={maxRate} />
+            {/* Utilise pctGarde de Gestion 2026 si dispo, sinon rate local */}
+            {a.g ? (
+              <EquityBar pctGarde={a.g.pctGarde} avgGarde={avgGarde} />
+            ) : (
+              <EquityBar
+                rate={a.stat.rate}
+                maxRate={Math.max(...agents.map(ag => stats[ag.idx]?.rate ?? 0), 0.01)}
+              />
+            )}
             {a.cell?.affect ? (
               <AffectBadge
                 affect={a.cell.affect}
@@ -131,7 +154,8 @@ export function PlanningTab({ data, onAffect }: Props) {
         open={modal.open}
         agentName={modal.agentName}
         dispo={modal.dispo}
-        rate={stats[modal.agentIdx]?.rate ?? 0}
+        rate={gestion[agents[modal.agentIdx]?.name?.toLowerCase()]?.pctGarde
+              ?? stats[modal.agentIdx]?.rate ?? 0}
         currentAffect={modal.currentAffect}
         onConfirm={handleConfirm}
         onDelete={handleDelete}

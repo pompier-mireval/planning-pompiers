@@ -36,4 +36,18 @@ export interface AgentStats {
   rate: number;
 }
 
+// Stats issues de la feuille "Gestion 2026"
+export interface AgentGestionStats {
+  joursDispos: number;
+  nbGardes: number;
+  pctGarde: number;      // 0..1
+  nbAstreintes: number;
+  pctAstreinte: number;  // 0..1
+  moyEquipe: number;     // moyenne équipe (référence)
+  ecart: number;         // écart individuel par rapport à la moyenne
+}
+
+// agentName (lowercase) → AgentGestionStats
+export type GestionMap = Record<string, AgentGestionStats>;
+
 export type Tab = 'planning' | 'semaine' | 'equite' | 'dispos';

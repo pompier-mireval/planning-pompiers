@@ -1,6 +1,6 @@
 import { CONFIG } from './config';
 import { colLetter, parseSheetDate, daysBetween, SAISON_START, MAX_OFFSET } from './dateUtils';
-import type { Agent, CellMap, GardeMap } from './types';
+import type { Agent, CellMap, GardeMap, GestionMap, AgentGestionStats } from './types';
 
 const BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 
@@ -14,13 +14,10 @@ export function setAccessToken(token: string, expiresIn = 3400) {
 export function clearAccessToken() { _accessToken = ''; _tokenExpiry = 0; }
 export function hasAccessToken()   { return !!_accessToken && Date.now() < _tokenExpiry; }
 
-// Plus de tokenClient GIS — l'auth se fait via redirect manuel dans useAuth
 export async function ensureAccessToken(): Promise<void> {
   if (hasAccessToken()) return;
-  // Importe dynamiquement pour éviter la dépendance circulaire
   const { requestOAuthToken } = await import('../hooks/useAuth');
   requestOAuthToken();
-  // La page va être redirigée — cette Promise ne se résout pas
   return new Promise(() => {});
 }
 
@@ -74,6 +71,49 @@ export async function findAgent(email: string): Promise<Agent | null> {
 
 export async function loadSaisonData(): Promise<string[][]> {
   return sheetsGet(CONFIG.SHEETS.SAISON + '!A1:ZZ200');
+}
+
+/**
+ * Charge la feuille "Gestion 2026".
+ * Format attendu (ligne 1 = en-têtes) :
+ *   A=Agent, B=S/off, C=Cond., D=Jours dispos, E=Nb gardes, F=% garde,
+ *   G=Nb astreintes, H=% astreinte, I=Moy. équipe, J=Écart
+ */
+export async function loadGestionData(): Promise<GestionMap> {
+  const rows = await sheetsGet(CONFIG.SHEETS.GESTION + '!A1:J200');
+  const gestion: GestionMap = {};
+
+  // Ignorer la ligne d'en-tête (row 0)
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const name = (r[0] || '').trim();
+    if (!name) continue;
+
+    const parseNum = (v: string | undefined) => {
+      if (!v) return 0;
+      // Supprimer le signe % si présent et convertir
+      const cleaned = v.replace('%', '').replace(',', '.').trim();
+      return parseFloat(cleaned) || 0;
+    };
+
+    const pctGardeRaw   = parseNum(r[5]);
+    const pctAstRaw     = parseNum(r[7]);
+
+    const stats: AgentGestionStats = {
+      joursDispos:   parseNum(r[3]),
+      nbGardes:      parseNum(r[4]),
+      // Si la valeur est déjà en % (ex: 25 pour 25%), diviser par 100
+      pctGarde:      pctGardeRaw > 1 ? pctGardeRaw / 100 : pctGardeRaw,
+      nbAstreintes:  parseNum(r[6]),
+      pctAstreinte:  pctAstRaw > 1 ? pctAstRaw / 100 : pctAstRaw,
+      moyEquipe:     parseNum(r[8]),
+      ecart:         parseNum(r[9]),
+    };
+
+    gestion[name.toLowerCase()] = stats;
+  }
+
+  return gestion;
 }
 
 export function parseSaisonData(
