@@ -116,6 +116,14 @@ export function PlanningTab({ data, onAffect }: Props) {
       {/* Agent list */}
       <div className="card">
         <div className="card-title">Agents disponibles · du moins chargé au plus chargé</div>
+        {available.length > 0 && (
+          <div className="agent-row agent-row-dual agent-row-header">
+            <span />
+            <span className="gauge-col-label">Garde</span>
+            <span className="gauge-col-label gauge-col-label-ast">Astreinte</span>
+            <span />
+          </div>
+        )}
         {available.length === 0 ? (
           <div className="empty-state">Aucun agent disponible ce jour</div>
         ) : available.map(a => (
