@@ -14,51 +14,19 @@ function parseJwt(token: string) {
 const TOKEN_KEY = 'gapi_token';
 const TOKEN_EXPIRY_KEY = 'gapi_token_expiry';
 
-export function requestOAuthToken(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const redirectUri = window.location.origin + '/oauth-callback';
-    const params = new URLSearchParams({
-      client_id:     CONFIG.GOOGLE_CLIENT_ID,
-      redirect_uri:  redirectUri,
-      response_type: 'token',
-      scope:         'https://www.googleapis.com/auth/spreadsheets',
-      include_granted_scopes: 'true',
-    });
-    const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
-
-    // Tentative popup (évite de perdre l'état de la page)
-    const popup = window.open(url, 'oauth', 'width=500,height=600,left=200,top=100');
-    if (!popup || popup.closed) {
-      // Popup bloqué → fallback redirect classique
-      sessionStorage.setItem('oauth_return', window.location.href);
-      window.location.href = url;
-      return;
-    }
-
-    // Réception du token via postMessage depuis /oauth-callback
-    const handler = (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-      if (event.data?.type !== 'oauth_token') return;
-      window.removeEventListener('message', handler);
-      clearInterval(checkClosed);
-      const { token, expiresIn } = event.data as { type: string; token: string; expiresIn: number };
-      const expiry = Date.now() + expiresIn * 1000;
-      sessionStorage.setItem(TOKEN_KEY, token);
-      sessionStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
-      setAccessToken(token, expiresIn);
-      resolve();
-    };
-    window.addEventListener('message', handler);
-
-    // Si le popup est fermé sans résultat
-    const checkClosed = setInterval(() => {
-      if (popup.closed) {
-        clearInterval(checkClosed);
-        window.removeEventListener('message', handler);
-        reject(new Error('Popup fermé'));
-      }
-    }, 500);
+export function requestOAuthToken() {
+  sessionStorage.setItem('oauth_return', window.location.href);
+  const params = new URLSearchParams({
+    client_id:     CONFIG.GOOGLE_CLIENT_ID,
+    redirect_uri:  window.location.origin + window.location.pathname,
+    response_type: 'token',
+    scope:         'https://www.googleapis.com/auth/spreadsheets',
+    include_granted_scopes: 'true',
   });
+  const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+  console.log('[oauth] redirect_uri:', window.location.origin + window.location.pathname);
+  console.log('[oauth] full url:', url);
+  window.location.href = url;
 }
 
 function loadTokenFromStorage(): boolean {
@@ -101,19 +69,6 @@ export function useAuth() {
     sessionStorage.removeItem(TOKEN_EXPIRY_KEY);
     clearAccessToken();
     setUser(null);
-  }, []);
-
-  // Renouvelle proactivement le token OAuth 5 minutes avant expiration
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const expiry = parseInt(sessionStorage.getItem(TOKEN_EXPIRY_KEY) || '0', 10);
-      const remaining = expiry - Date.now();
-      // Si token expire dans moins de 5 min et que l'utilisateur est connecté
-      if (remaining > 0 && remaining < 5 * 60 * 1000) {
-        requestOAuthToken();
-      }
-    }, 60_000); // vérifie chaque minute
-    return () => clearInterval(interval);
   }, []);
 
   const handleCredential = useCallback(async (response: any) => {
