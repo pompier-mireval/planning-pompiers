@@ -257,6 +257,7 @@ select { font-family: inherit; }
   top: 0;
   z-index: 100;
   flex-shrink: 0;
+  height: 70px;
 }
 
 .topbar-brand {
@@ -386,7 +387,7 @@ select { font-family: inherit; }
     gap: 2px;
     flex-shrink: 0;
     position: sticky;
-    top: var(--topbar-h);
+    top: 0;
     height: calc(100vh - var(--topbar-h));
     overflow-y: auto;
   }
