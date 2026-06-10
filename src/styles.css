@@ -1626,3 +1626,17 @@ select { font-family: inherit; }
   color: var(--text-3);
   font-size: 13px;
 }
+
+.equity-gauge-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eq-gauge-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #888);
+}

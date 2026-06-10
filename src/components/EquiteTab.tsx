@@ -50,16 +50,8 @@ export function EquiteTab({ data }: Props) {
           <div className="stat-label">Agents</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{totalGardes}</div>
-          <div className="stat-label">Gardes</div>
-        </div>
-        <div className="stat-card">
           <div className="stat-value">{Math.round(avgGarde * 100)}%</div>
           <div className="stat-label">Moy. garde</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{totalAstreintes}</div>
-          <div className="stat-label">Astreintes</div>
         </div>
         <div className="stat-card">
           <div className="stat-value">{Math.round(avgAstreinte * 100)}%</div>
@@ -98,22 +90,26 @@ export function EquiteTab({ data }: Props) {
               </div>
 
               {/* Desktop: barres + compteurs */}
-              <span className="eq-count equite-garde-col">{a.g.nbGardes}G / {a.g.joursDispos}D</span>
-              <div className="equity-double-col equite-garde-col">
-                <div className="equity-bar">
-                  Garde
-                  <div className={`equity-fill ${gardeColorCls(a.g.pctGarde)}`} style={{ width: gFillW + '%' }} />
+              <div className="equite-garde-col equity-gauge-group">
+                <span className="eq-gauge-label">Garde</span>
+                <span className="eq-count">{a.g.nbGardes}G / {a.g.joursDispos}D</span>
+                <div className="equity-double-col">
+                  <div className="equity-bar">
+                    <div className={`equity-fill ${gardeColorCls(a.g.pctGarde)}`} style={{ width: gFillW + '%' }} />
+                  </div>
+                  <span className={`eq-pct-val ${pctColorCls(a.g.pctGarde, avgGarde)}`}>{gPct}%</span>
                 </div>
-                <span className={`eq-pct-val ${pctColorCls(a.g.pctGarde, avgGarde)}`}>{gPct}%</span>
               </div>
 
-              <span className="eq-count equite-ast-col">{a.g.nbAstreintes}A</span>
-              <div className="equity-double-col equite-ast-col">
-                <div className="equity-bar equity-bar-ast">
-                  Astreinte
-                  <div className={`equity-fill ${astrColorCls(a.g.pctAstreinte)}`} style={{ width: aFillW + '%' }} />
+              <div className="equite-ast-col equity-gauge-group">
+                <span className="eq-gauge-label">Astreinte</span>
+                <span className="eq-count">{a.g.nbAstreintes}A</span>
+                <div className="equity-double-col">
+                  <div className="equity-bar equity-bar-ast">
+                    <div className={`equity-fill ${astrColorCls(a.g.pctAstreinte)}`} style={{ width: aFillW + '%' }} />
+                  </div>
+                  <span className={`eq-pct-val ${pctColorCls(a.g.pctAstreinte, avgAstreinte)}`}>{aPct}%</span>
                 </div>
-                <span className={`eq-pct-val ${pctColorCls(a.g.pctAstreinte, avgAstreinte)}`}>{aPct}%</span>
               </div>
             </div>
           );
