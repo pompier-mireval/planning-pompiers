@@ -113,20 +113,6 @@ export function EquiteTab({ data }: Props) {
                 </div>
                 <span className={`eq-pct-val ${pctColorCls(a.g.pctAstreinte, avgAstreinte)}`}>{aPct}%</span>
               </div>
-
-              {/* Mobile: stats compactes à droite */}
-              <div className="equite-mobile-stats">
-                <div className="equite-mobile-line">
-                  <span className="equite-mobile-label">GRR</span>
-                  <span className={`eq-pct-val ${pctColorCls(a.g.pctGarde, avgGarde)}`}>{gPct}%</span>
-                  <span className="eq-count">{a.g.nbGardes}G</span>
-                </div>
-                <div className="equite-mobile-line">
-                  <span className="equite-mobile-label">AST</span>
-                  <span className={`eq-pct-val ${pctColorCls(a.g.pctAstreinte, avgAstreinte)}`}>{aPct}%</span>
-                  <span className="eq-count">{a.g.nbAstreintes}A</span>
-                </div>
-              </div>
             </div>
           );
         })}
