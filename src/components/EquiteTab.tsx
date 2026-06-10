@@ -7,7 +7,6 @@ interface Props { data: AppData; }
 export function EquiteTab({ data }: Props) {
   const { agents, gestion } = data;
 
-  // Construire la liste enrichie depuis Gestion 2026
   const enriched = agents.map(a => {
     const g = gestion[a.name.toLowerCase()] ?? {
       joursDispos: 0, nbGardes: 0, pctGarde: 0,
@@ -16,38 +15,35 @@ export function EquiteTab({ data }: Props) {
     return { ...a, g };
   });
 
-  // Trier par % garde croissant
   const sorted = [...enriched].sort((a, b) => a.g.pctGarde - b.g.pctGarde);
 
-  const totalGardes    = sorted.reduce((s, a) => s + a.g.nbGardes, 0);
+  const totalGardes     = sorted.reduce((s, a) => s + a.g.nbGardes, 0);
   const totalAstreintes = sorted.reduce((s, a) => s + a.g.nbAstreintes, 0);
-  const avgGarde       = sorted.length ? sorted.reduce((s, a) => s + a.g.pctGarde, 0) / sorted.length : 0;
-  const avgAstreinte   = sorted.length ? sorted.reduce((s, a) => s + a.g.pctAstreinte, 0) / sorted.length : 0;
-
-  const maxGarde     = Math.max(...sorted.map(a => a.g.pctGarde), 0.01);
-  const maxAstreinte = Math.max(...sorted.map(a => a.g.pctAstreinte), 0.01);
+  const avgGarde        = sorted.length ? sorted.reduce((s, a) => s + a.g.pctGarde, 0) / sorted.length : 0;
+  const avgAstreinte    = sorted.length ? sorted.reduce((s, a) => s + a.g.pctAstreinte, 0) / sorted.length : 0;
+  const maxGarde        = Math.max(...sorted.map(a => a.g.pctGarde), 0.01);
+  const maxAstreinte    = Math.max(...sorted.map(a => a.g.pctAstreinte), 0.01);
 
   function gardeColorCls(pct: number) {
-    if (pct < avgGarde * 0.8)   return 'fill-low';
-    if (pct < avgGarde * 1.2)   return 'fill-mid';
+    if (pct < avgGarde * 0.8) return 'fill-low';
+    if (pct < avgGarde * 1.2) return 'fill-mid';
     return 'fill-high';
   }
 
   function astrColorCls(pct: number) {
-    if (pct < avgAstreinte * 0.8)   return 'fill-low';
-    if (pct < avgAstreinte * 1.2)   return 'fill-mid';
+    if (pct < avgAstreinte * 0.8) return 'fill-low';
+    if (pct < avgAstreinte * 1.2) return 'fill-mid';
     return 'fill-high';
   }
 
   function pctColorCls(pct: number, avg: number) {
-    if (pct < avg * 0.8)   return 'pct-low';
-    if (pct < avg * 1.2)   return 'pct-mid';
+    if (pct < avg * 0.8) return 'pct-low';
+    if (pct < avg * 1.2) return 'pct-mid';
     return 'pct-high';
   }
 
   return (
     <div className="tab-content">
-      {/* Summary stats */}
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-value">{agents.length}</div>
@@ -59,7 +55,7 @@ export function EquiteTab({ data }: Props) {
         </div>
         <div className="stat-card">
           <div className="stat-value">{Math.round(avgGarde * 100)}%</div>
-          <div className="stat-label">Taux garde moy.</div>
+          <div className="stat-label">Moy. garde</div>
         </div>
         <div className="stat-card">
           <div className="stat-value">{totalAstreintes}</div>
@@ -67,14 +63,14 @@ export function EquiteTab({ data }: Props) {
         </div>
         <div className="stat-card">
           <div className="stat-value">{Math.round(avgAstreinte * 100)}%</div>
-          <div className="stat-label">Taux astreinte moy.</div>
+          <div className="stat-label">Moy. ast.</div>
         </div>
       </div>
 
       <div className="card">
         <div className="card-title">Équité gardes &amp; astreintes (source : Gestion 2026)</div>
 
-        {/* Légende colonnes */}
+        {/* En-tête — desktop only (masqué mobile via CSS) */}
         <div className="equite-header-row">
           <span className="eq-rank" />
           <div className="agent-info" />
@@ -101,22 +97,35 @@ export function EquiteTab({ data }: Props) {
                 </div>
               </div>
 
-              {/* Colonne Gardes */}
-              <span className="eq-count">{a.g.nbGardes}G / {a.g.joursDispos}D</span>
-              <div className="equity-double-col">
+              {/* Desktop: barres + compteurs */}
+              <span className="eq-count equite-garde-col">{a.g.nbGardes}G / {a.g.joursDispos}D</span>
+              <div className="equity-double-col equite-garde-col">
                 <div className="equity-bar">
                   <div className={`equity-fill ${gardeColorCls(a.g.pctGarde)}`} style={{ width: gFillW + '%' }} />
                 </div>
                 <span className={`eq-pct-val ${pctColorCls(a.g.pctGarde, avgGarde)}`}>{gPct}%</span>
               </div>
 
-              {/* Colonne Astreintes */}
-              <span className="eq-count">{a.g.nbAstreintes}A</span>
-              <div className="equity-double-col">
+              <span className="eq-count equite-ast-col">{a.g.nbAstreintes}A</span>
+              <div className="equity-double-col equite-ast-col">
                 <div className="equity-bar equity-bar-ast">
                   <div className={`equity-fill ${astrColorCls(a.g.pctAstreinte)}`} style={{ width: aFillW + '%' }} />
                 </div>
                 <span className={`eq-pct-val ${pctColorCls(a.g.pctAstreinte, avgAstreinte)}`}>{aPct}%</span>
+              </div>
+
+              {/* Mobile: stats compactes à droite */}
+              <div className="equite-mobile-stats">
+                <div className="equite-mobile-line">
+                  <span className="equite-mobile-label">GRR</span>
+                  <span className={`eq-pct-val ${pctColorCls(a.g.pctGarde, avgGarde)}`}>{gPct}%</span>
+                  <span className="eq-count">{a.g.nbGardes}G</span>
+                </div>
+                <div className="equite-mobile-line">
+                  <span className="equite-mobile-label">AST</span>
+                  <span className={`eq-pct-val ${pctColorCls(a.g.pctAstreinte, avgAstreinte)}`}>{aPct}%</span>
+                  <span className="eq-count">{a.g.nbAstreintes}A</span>
+                </div>
               </div>
             </div>
           );
