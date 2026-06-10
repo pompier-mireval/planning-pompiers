@@ -57,7 +57,7 @@ export function SemaineTab({ data }: Props) {
                       <span>{a.name}</span>
                       <div className="wt-badges">
                         {a.soff && <span className="badge-sm badge-soff">S/off</span>}
-                        {a.cond && <span className="badge-sm badge-cond">Cond.</span>}
+                        {a.cond && <span className="badge-sm badge-cond">Cod 2</span>}
                       </div>
                     </td>
                     {days.map(({ offset }) => {

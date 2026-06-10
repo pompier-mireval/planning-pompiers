@@ -86,7 +86,7 @@ export function QualifBadges({ soff, cond }: { soff: boolean; cond: boolean }) {
   return (
     <>
       {soff && <span className="badge-sm badge-soff">S/off</span>}
-      {cond && <span className="badge-sm badge-cond">Cond.</span>}
+      {cond && <span className="badge-sm badge-cond">Cod 2</span>}
     </>
   );
 }
