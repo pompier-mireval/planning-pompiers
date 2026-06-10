@@ -101,6 +101,7 @@ export function EquiteTab({ data }: Props) {
               <span className="eq-count equite-garde-col">{a.g.nbGardes}G / {a.g.joursDispos}D</span>
               <div className="equity-double-col equite-garde-col">
                 <div className="equity-bar">
+                  Garde
                   <div className={`equity-fill ${gardeColorCls(a.g.pctGarde)}`} style={{ width: gFillW + '%' }} />
                 </div>
                 <span className={`eq-pct-val ${pctColorCls(a.g.pctGarde, avgGarde)}`}>{gPct}%</span>
@@ -109,6 +110,7 @@ export function EquiteTab({ data }: Props) {
               <span className="eq-count equite-ast-col">{a.g.nbAstreintes}A</span>
               <div className="equity-double-col equite-ast-col">
                 <div className="equity-bar equity-bar-ast">
+                  Astreinte
                   <div className={`equity-fill ${astrColorCls(a.g.pctAstreinte)}`} style={{ width: aFillW + '%' }} />
                 </div>
                 <span className={`eq-pct-val ${pctColorCls(a.g.pctAstreinte, avgAstreinte)}`}>{aPct}%</span>
