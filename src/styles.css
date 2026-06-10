@@ -65,7 +65,6 @@
   --brand-border:  #5A53C0;
   --brand-dim:     #ACA7F8;
 
-  /* Higher-chroma softs so chips read clearly on dark backgrounds */
   --green:      #30C98A;
   --green-soft: #0F3026;
   --amber:      #EDA830;
@@ -87,7 +86,6 @@
   --border:   rgba(255,255,255,0.09);
   --shadow:   0 1px 3px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.25);
 
-  /* Text — readable on dark */
   --text:   #ECEEF5;
   --text-2: #B0B3C5;
   --text-3: #737690;
@@ -289,7 +287,6 @@ select { font-family: inherit; }
   color: var(--text);
 }
 
-/* Masquer le titre sur très petit écran pour gagner de l'espace */
 @media (max-width: 360px) {
   .topbar-title { display: none; }
 }
@@ -351,7 +348,6 @@ select { font-family: inherit; }
   font-size: 12px;
   font-weight: 500;
   color: var(--text-2);
-  /* Masqué sur mobile, visible desktop */
   display: none;
 }
 
@@ -469,7 +465,6 @@ select { font-family: inherit; }
   font-size: 10px;
   font-weight: 500;
   transition: color 0.15s;
-  /* Better touch target */
   min-height: 56px;
 }
 
@@ -579,7 +574,6 @@ select { font-family: inherit; }
 
 .affect-badge:hover { opacity: 0.8; transform: scale(0.97); }
 
-/* Affect chip colors — ensuring WCAG AA contrast in both modes */
 .af-grr  { background: var(--blue-soft);   color: var(--blue); }
 .af-ast  { background: var(--amber-soft);  color: var(--amber); }
 .af-vpf  { background: var(--green-soft);  color: var(--green); }
@@ -595,12 +589,13 @@ select { font-family: inherit; }
 }
 
 .equity-bar {
-  width: 52px;
   height: 5px;
   border-radius: 3px;
   background: var(--surface2);
   overflow: hidden;
   flex-shrink: 0;
+  /* largeur gérée par le contexte flex/grid parent */
+  width: 52px;
 }
 
 @media (min-width: 480px) {
@@ -638,7 +633,6 @@ select { font-family: inherit; }
 .badge-cond { background: var(--green-soft); color: var(--green); }
 
 /* ── Agent Row ──────────────────────────────────────────────── */
-/* Mobile : 2 colonnes (nom / actions) */
 .agent-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -648,7 +642,6 @@ select { font-family: inherit; }
   border-bottom: 1px solid var(--border);
 }
 
-/* Desktop : 4 colonnes */
 @media (min-width: 540px) {
   .agent-row {
     grid-template-columns: 1fr auto auto auto;
@@ -671,7 +664,6 @@ select { font-family: inherit; }
   opacity: 0.9;
 }
 
-/* Cacher les en-têtes de colonnes jauges sur mobile */
 .agent-row-header .gauge-col-label,
 .agent-row-header .gauge-col-avg {
   display: none;
@@ -757,7 +749,6 @@ select { font-family: inherit; }
   white-space: nowrap;
   font-weight: 500;
   transition: all 0.15s;
-  /* Larger tap target on mobile */
   min-height: 36px;
 }
 
@@ -909,7 +900,7 @@ select { font-family: inherit; }
   .week-nav-label { font-size: 13px; }
 }
 
-/* ── Week Table ── Desktop scrollable table ──────────────────── */
+/* ── Week Table ─────────────────────────────────────────────── */
 .week-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 .week-table {
@@ -969,7 +960,7 @@ select { font-family: inherit; }
 
 .wt-empty { color: var(--text-3); }
 
-/* ── Cell chips (week table + mobile cards) ──────────────────── */
+/* ── Cell chips ─────────────────────────────────────────────── */
 .cell-chip {
   font-size: 10px;
   font-weight: 700;
@@ -983,8 +974,7 @@ select { font-family: inherit; }
 .cell-m  { background: var(--blue-soft);  color: var(--blue); }
 .cell-am { background: var(--amber-soft); color: var(--amber); }
 
-/* ── Week mobile cards (stacked view < 640px) ────────────────── */
-/* On narrow screens, hide the table and show agent cards instead */
+/* ── Week mobile cards ──────────────────────────────────────── */
 @media (max-width: 639px) {
   .week-scroll { display: none; }
   .week-cards  { display: flex; flex-direction: column; gap: 0; }
@@ -1024,7 +1014,6 @@ select { font-family: inherit; }
   flex-wrap: wrap;
 }
 
-/* Chips row: 7 jours sur une ligne */
 .wc-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -1131,7 +1120,7 @@ select { font-family: inherit; }
 }
 
 /* ── Equite Row ─────────────────────────────────────────────── */
-/* Mobile: stacked layout */
+/* Mobile: rank / nom / stats compactes */
 .equite-row {
   display: grid;
   grid-template-columns: 28px 1fr auto 80px 40px;
@@ -1141,10 +1130,9 @@ select { font-family: inherit; }
   border-bottom: 1px solid var(--border);
 }
 
-/* Double gauge layout */
+/* Double gauge — mobile: rank / nom / garde / astreinte */
 .equite-row-double {
   display: grid;
-  /* mobile: rank / name / garde-pct / ast-pct */
   grid-template-columns: 24px 1fr auto auto;
   gap: 6px;
   align-items: center;
@@ -1152,25 +1140,27 @@ select { font-family: inherit; }
   border-bottom: 1px solid var(--border);
 }
 
+/* Desktop: rank / nom / garde(140px) / astreinte(140px) */
 @media (min-width: 540px) {
   .equite-row-double {
-    grid-template-columns: 28px 1fr auto 1fr auto 1fr;
+    grid-template-columns: 28px 1fr 150px 150px;
+    gap: 10px;
   }
 }
 
 .equite-row:last-child,
 .equite-row-double:last-child { border-bottom: none; }
 
-/* En-tête colonnes */
+/* En-tête colonnes — masqué mobile */
 .equite-header-row {
-  display: none; /* masqué sur mobile */
+  display: none;
 }
 
 @media (min-width: 540px) {
   .equite-header-row {
     display: grid;
-    grid-template-columns: 28px 1fr auto 1fr auto 1fr;
-    gap: 6px;
+    grid-template-columns: 28px 1fr 150px 150px;
+    gap: 10px;
     align-items: center;
     padding: 4px 4px 8px;
     border-bottom: 2px solid var(--border);
@@ -1195,7 +1185,7 @@ select { font-family: inherit; }
   letter-spacing: 0.5px;
 }
 
-/* Colonnes avec barre gardes/astreintes — masquées mobile (remplacées par badges inline) */
+/* Colonnes garde/astreinte — masquées mobile */
 .equite-garde-col,
 .equite-ast-col {
   display: none;
@@ -1204,11 +1194,51 @@ select { font-family: inherit; }
 @media (min-width: 540px) {
   .equite-garde-col,
   .equite-ast-col {
-    display: contents;
+    display: flex;          /* flex column pour empiler label + compteur + barre */
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
   }
 }
 
-/* Badges mobiles compacts — affichés uniquement mobile */
+/* Groupe label + compteur + barre */
+.equity-gauge-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* Label "Garde" / "Astreinte" au-dessus de la jauge */
+.eq-gauge-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+}
+
+/* Ligne barre + pourcentage */
+.equity-double-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* La barre prend tout l'espace restant, identique pour garde et astreinte */
+.equity-double-col .equity-bar {
+  flex: 1;
+  width: auto;   /* écrase le width fixe global */
+  min-width: 0;
+}
+
+.equity-bar-ast {
+  background: color-mix(in srgb, var(--brand) 12%, var(--surface2));
+}
+
+/* Badges mobiles compacts */
 .equite-mobile-stats {
   display: flex;
   flex-direction: column;
@@ -1237,22 +1267,6 @@ select { font-family: inherit; }
   min-width: 16px;
 }
 
-.equity-double-col {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.equity-double-col .equity-bar {
-  flex: 1;
-  min-width: 30px;
-}
-
-.equity-bar-ast {
-  background: color-mix(in srgb, var(--brand) 12%, var(--surface2));
-}
-
 .eq-rank {
   font-size: 11px;
   color: var(--text-3);
@@ -1269,10 +1283,12 @@ select { font-family: inherit; }
 }
 
 .eq-pct-val {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-align: right;
   font-family: var(--font-mono);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .pct-low  { color: var(--green); }
@@ -1332,7 +1348,6 @@ select { font-family: inherit; }
   font-family: var(--font-ui);
   transition: border-color 0.15s;
   appearance: auto;
-  /* Better tap target */
   min-height: 42px;
 }
 
@@ -1404,7 +1419,6 @@ select { font-family: inherit; }
   max-width: 480px;
   animation: modalUp 0.25s ease-out;
   box-shadow: 0 -4px 40px rgba(0,0,0,0.2);
-  /* Safe area bottom */
   padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
 }
 
@@ -1500,7 +1514,6 @@ select { font-family: inherit; }
   text-align: center;
   transition: all 0.15s;
   font-family: var(--font-mono);
-  /* Larger tap target */
   min-height: 48px;
 }
 
@@ -1625,18 +1638,4 @@ select { font-family: inherit; }
   padding: 32px;
   color: var(--text-3);
   font-size: 13px;
-}
-
-.equity-gauge-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.eq-gauge-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted, #888);
 }
