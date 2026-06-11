@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<!-- Remplace le content ci-dessous par ta balise Google Search Console -->
+<!-- <meta name="google-site-verification" content="XXXX_REMPLACE_XXXX" /> -->
+<meta name="google-site-verification" content="9AQWOujF10A8gpyfGuArPDAQbvh3tE5zy0p4FGbNYIg" />
+<title>Planning Pompiers – Mireval</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --rouge:#C0392B;--rouge-sombre:#922B21;--rouge-clair:#E74C3C;
+    --anthracite:#1C1C1E;--gris:#2C2C2E;--gris-clair:#F2F2F7;
+    --blanc:#FFFFFF;--texte:#3A3A3C;
+  }
+  body{font-family:'Inter',sans-serif;background:var(--gris-clair);color:var(--texte);min-height:100vh}
+  .hero{background:linear-gradient(145deg,var(--anthracite) 0%,var(--rouge-sombre) 100%);color:var(--blanc);padding:3.5rem 1.5rem 4rem;text-align:center;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+  .badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:999px;padding:.35rem 1rem;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.5rem}
+  .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,8vw,4.5rem);letter-spacing:.04em;line-height:1;margin-bottom:.75rem}
+  .hero h1 span{color:var(--rouge-clair)}
+  .hero p{font-size:1rem;opacity:.8;max-width:440px;margin:0 auto 2rem;line-height:1.6}
+  .btn-primary{display:inline-flex;align-items:center;gap:.6rem;background:var(--blanc);color:var(--rouge-sombre);font-weight:700;font-size:.9rem;padding:.75rem 1.75rem;border-radius:8px;text-decoration:none;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,0.4)}
+  .btn-primary svg{width:18px;height:18px}
+  .section{max-width:680px;margin:0 auto;padding:2.5rem 1.5rem}
+  .section-label{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--rouge);margin-bottom:.75rem}
+  .section h2{font-size:1.4rem;font-weight:700;color:var(--anthracite);margin-bottom:1.5rem;line-height:1.3}
+  .features{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media(max-width:480px){.features{grid-template-columns:1fr}}
+  .card{background:var(--blanc);border-radius:12px;padding:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.06)}
+  .card-icon{width:38px;height:38px;background:var(--gris-clair);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:.75rem}
+  .card h3{font-size:.9rem;font-weight:700;color:var(--anthracite);margin-bottom:.3rem}
+  .card p{font-size:.82rem;color:#666;line-height:1.5}
+  .access-box{background:var(--blanc);border-radius:12px;border-left:4px solid var(--rouge);padding:1.25rem 1.5rem;display:flex;gap:1rem;align-items:flex-start;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+  .access-box .icon{font-size:1.5rem;margin-top:.1rem}
+  .access-box h3{font-size:.95rem;font-weight:700;color:var(--anthracite);margin-bottom:.25rem}
+  .access-box p{font-size:.82rem;color:#666;line-height:1.5}
+  footer{text-align:center;padding:1.5rem;font-size:.78rem;color:#999;border-top:1px solid #e5e5e5}
+  footer a{color:var(--rouge);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="badge"><span>🔥</span> Centre de Secours de Mireval</div>
+  <h1>Planning<br><span>Pompiers</span></h1>
+  <p>Application de gestion du planning et des disponibilités des sapeurs-pompiers volontaires de Mireval.</p>
+  <a href="https://pompier-mireval.github.io/planning-pompiers/" class="btn-primary">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    Accéder à l'application
+  </a>
+</div>
+<div class="section">
+  <div class="section-label">Fonctionnalités</div>
+  <h2>Tout ce dont l'équipe a besoin</h2>
+  <div class="features">
+    <div class="card"><div class="card-icon">📅</div><h3>Planning saison</h3><p>Vue complète des gardes et affectations sur toute la saison estivale.</p></div>
+    <div class="card"><div class="card-icon">✅</div><h3>Disponibilités</h3><p>Chaque agent renseigne ses disponibilités directement depuis l'app.</p></div>
+    <div class="card"><div class="card-icon">📊</div><h3>Équité des gardes</h3><p>Suivi du nombre de gardes par agent pour une répartition équitable.</p></div>
+    <div class="card"><div class="card-icon">🗓️</div><h3>Vue semaine</h3><p>Affichage hebdomadaire pour visualiser les prochaines gardes rapidement.</p></div>
+  </div>
+</div>
+<div class="section" style="padding-top:0">
+  <div class="section-label">Accès</div>
+  <h2>Réservé aux agents du centre</h2>
+  <div class="access-box">
+    <div class="icon">🔒</div>
+    <div>
+      <h3>Connexion Google requise</h3>
+      <p>L'accès est restreint aux sapeurs-pompiers volontaires du centre de Mireval enregistrés par l'administrateur. La connexion s'effectue via votre compte Google.</p>
+    </div>
+  </div>
+</div>
+<footer>
+  Centre de Secours de Mireval &nbsp;·&nbsp;
+  <a href="privacy.html">Politique de confidentialité</a> &nbsp;·&nbsp;
+  Contact : <a href="mailto:tbastien6@gmail.com">tbastien6@gmail.com</a>
+</footer>
+</body>
+</html>
