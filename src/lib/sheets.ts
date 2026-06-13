@@ -14,20 +14,21 @@ export function setAccessToken(token: string, expiresIn = 3400) {
 export function clearAccessToken() { _accessToken = ''; _tokenExpiry = 0; }
 export function hasAccessToken()   { return !!_accessToken && Date.now() < _tokenExpiry; }
 
-export async function ensureAccessToken(): Promise<void> {
+export async function ensureAccessToken(email?: string): Promise<void> {
   if (hasAccessToken()) return;
 
-  // Tentative de restauration depuis localStorage avant de rediriger
-  const token  = localStorage.getItem('gapi_token');
-  const expiry = parseInt(localStorage.getItem('gapi_token_expiry') || '0', 10);
+  // Restaure depuis localStorage si encore valide
+  const token  = localStorage.getItem('pp_token');
+  const expiry = parseInt(localStorage.getItem('pp_token_expiry') || '0', 10);
   if (token && Date.now() < expiry) {
     setAccessToken(token, Math.floor((expiry - Date.now()) / 1000));
     return;
   }
 
-  const { requestOAuthToken } = await import('../hooks/useAuth');
-  requestOAuthToken();
-  return new Promise(() => {});
+  // Demande le token OAuth via popup (pas de redirect page entière)
+  const { ensureOAuthToken } = await import('../hooks/useAuth');
+  const hint = email || JSON.parse(localStorage.getItem('pp_user') || '{}').email || '';
+  await ensureOAuthToken(hint);
 }
 
 async function sheetsGet(range: string): Promise<string[][]> {

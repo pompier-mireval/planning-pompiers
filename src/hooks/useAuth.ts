@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CONFIG } from '../lib/config';
-import { findAgent, setAccessToken, clearAccessToken } from '../lib/sheets';
+import { findAgent, setAccessToken, clearAccessToken, hasAccessToken } from '../lib/sheets';
 import type { CurrentUser } from '../lib/types';
 
 declare const google: any;
@@ -10,27 +10,13 @@ function parseJwt(token: string) {
   return JSON.parse(atob(base64));
 }
 
-// Clé localStorage pour le token OAuth (localStorage persiste entre onglets et rechargements)
-const TOKEN_KEY = 'gapi_token';
-const TOKEN_EXPIRY_KEY = 'gapi_token_expiry';
+const USER_KEY        = 'pp_user';
+const TOKEN_KEY       = 'pp_token';
+const TOKEN_EXPIRY_KEY = 'pp_token_expiry';
 
-export function requestOAuthToken() {
-  localStorage.setItem('oauth_return', window.location.href);
-  const params = new URLSearchParams({
-    client_id:     CONFIG.GOOGLE_CLIENT_ID,
-    redirect_uri:  window.location.origin + window.location.pathname,
-    response_type: 'token',
-    scope:         'https://www.googleapis.com/auth/spreadsheets',
-    include_granted_scopes: 'true',
-  });
-  const url = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
-  console.log('[oauth] redirect_uri:', window.location.origin + window.location.pathname);
-  console.log('[oauth] full url:', url);
-  window.location.href = url;
-}
-
+// Restaure le token OAuth depuis localStorage si encore valide
 function loadTokenFromStorage(): boolean {
-  const token = localStorage.getItem(TOKEN_KEY);
+  const token  = localStorage.getItem(TOKEN_KEY);
   const expiry = parseInt(localStorage.getItem(TOKEN_EXPIRY_KEY) || '0', 10);
   if (token && Date.now() < expiry) {
     setAccessToken(token, Math.floor((expiry - Date.now()) / 1000));
@@ -39,22 +25,52 @@ function loadTokenFromStorage(): boolean {
   return false;
 }
 
-function extractTokenFromHash(): boolean {
-  const hash = window.location.hash;
-  if (!hash) return false;
-  const params = new URLSearchParams(hash.slice(1));
-  const token = params.get('access_token');
-  const expiresIn = parseInt(params.get('expires_in') || '3400', 10);
-  if (!token) return false;
+// Demande le token OAuth via popup (sans redirect page entière)
+function requestTokenViaPopup(hint: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: CONFIG.GOOGLE_CLIENT_ID,
+      scope:     'https://www.googleapis.com/auth/spreadsheets',
+      hint,
+      callback:  (resp: any) => {
+        if (resp.error) { reject(new Error(resp.error)); return; }
+        const expiresIn = parseInt(resp.expires_in || '3400', 10);
+        const expiry    = Date.now() + expiresIn * 1000;
+        localStorage.setItem(TOKEN_KEY, resp.access_token);
+        localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
+        setAccessToken(resp.access_token, expiresIn);
+        resolve();
+      },
+    });
+    client.requestAccessToken({ prompt: 'none' }); // silent si déjà autorisé
+  });
+}
 
-  const expiry = Date.now() + expiresIn * 1000;
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
-  setAccessToken(token, expiresIn);
-
-  // Nettoie le hash sans recharger
-  window.history.replaceState(null, '', window.location.pathname + window.location.search);
-  return true;
+export async function ensureOAuthToken(email: string): Promise<void> {
+  if (hasAccessToken()) return;
+  if (loadTokenFromStorage()) return;
+  // Tente silencieux d'abord, puis avec consentement si nécessaire
+  try {
+    await requestTokenViaPopup(email);
+  } catch {
+    await new Promise<void>((resolve, reject) => {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: CONFIG.GOOGLE_CLIENT_ID,
+        scope:     'https://www.googleapis.com/auth/spreadsheets',
+        hint:      email,
+        callback:  (resp: any) => {
+          if (resp.error) { reject(new Error(resp.error)); return; }
+          const expiresIn = parseInt(resp.expires_in || '3400', 10);
+          const expiry    = Date.now() + expiresIn * 1000;
+          localStorage.setItem(TOKEN_KEY, resp.access_token);
+          localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
+          setAccessToken(resp.access_token, expiresIn);
+          resolve();
+        },
+      });
+      client.requestAccessToken({ prompt: 'consent' });
+    });
+  }
 }
 
 export function useAuth() {
@@ -64,8 +80,7 @@ export function useAuth() {
 
   const signOut = useCallback(() => {
     try { google.accounts.id.disableAutoSelect(); } catch (_) {}
-    sessionStorage.removeItem('user');
-    localStorage.removeItem('user');
+    localStorage.removeItem(USER_KEY);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(TOKEN_EXPIRY_KEY);
     clearAccessToken();
@@ -73,7 +88,7 @@ export function useAuth() {
   }, []);
 
   const handleCredential = useCallback(async (response: any) => {
-    const payload = parseJwt(response.credential);
+    const payload   = parseJwt(response.credential);
     const agentData = await findAgent(payload.email);
     if (!agentData) {
       alert('Accès refusé : ' + payload.email + " n'est pas dans la liste des agents.");
@@ -89,29 +104,41 @@ export function useAuth() {
       isCond:    agentData.cond,
       isAdmin:   agentData.admin,
     };
-    sessionStorage.setItem('user', JSON.stringify(newUser));
-    localStorage.setItem('user', JSON.stringify(newUser));
+    localStorage.setItem(USER_KEY, JSON.stringify(newUser));
     setUser(newUser);
+
+    // Demande le token OAuth immédiatement après connexion (popup silencieuse)
+    try {
+      await ensureOAuthToken(payload.email);
+    } catch (e) {
+      console.warn('[auth] token OAuth différé:', e);
+    }
   }, []);
 
   useEffect(() => {
-    // 1. Récupère le token depuis le hash si on revient d'un redirect OAuth
-    extractTokenFromHash();
-    // 2. Sinon charge depuis sessionStorage
+    // Restaure le token OAuth si dispo
     loadTokenFromStorage();
 
-    const script = document.createElement('script');
-    script.src   = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.onload = () => {
+    const script    = document.createElement('script');
+    script.src      = 'https://accounts.google.com/gsi/client';
+    script.async    = true;
+    script.onload   = () => {
       google.accounts.id.initialize({
         client_id:   CONFIG.GOOGLE_CLIENT_ID,
         callback:    handleCredential,
         auto_select: false,
       });
 
-      const saved = sessionStorage.getItem('user') || localStorage.getItem('user');
-      if (saved) setUser(JSON.parse(saved) as CurrentUser);
+      // Restaure la session utilisateur
+      const saved = localStorage.getItem(USER_KEY);
+      if (saved) {
+        const savedUser = JSON.parse(saved) as CurrentUser;
+        setUser(savedUser);
+        // Tente aussi de restaurer le token OAuth silencieusement
+        if (!hasAccessToken()) {
+          ensureOAuthToken(savedUser.email).catch(() => {});
+        }
+      }
 
       setAuthReady(true);
       setLoading(false);
