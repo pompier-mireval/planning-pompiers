@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
+import { requestOAuthToken } from './hooks/useAuth';
+import { hasAccessToken } from './lib/sheets';
 import { useAppData } from './hooks/useAppData';
 import { AuthScreen } from './components/AuthScreen';
 import { Topbar } from './components/Topbar';
@@ -29,6 +31,11 @@ export default function App() {
       // Default tab based on role
       if (!user.isAdmin) setTab('semaine');
       refresh();
+      // Demande le token OAuth proactivement si on ne l'a pas encore,
+      // pour éviter la redirect au moment de la première écriture.
+      if (!hasAccessToken()) {
+        requestOAuthToken();
+      }
     }
   }, [user]);
 

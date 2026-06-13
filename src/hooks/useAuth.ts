@@ -65,6 +65,7 @@ export function useAuth() {
   const signOut = useCallback(() => {
     try { google.accounts.id.disableAutoSelect(); } catch (_) {}
     sessionStorage.removeItem('user');
+    localStorage.removeItem('user');
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(TOKEN_EXPIRY_KEY);
     clearAccessToken();
@@ -89,6 +90,7 @@ export function useAuth() {
       isAdmin:   agentData.admin,
     };
     sessionStorage.setItem('user', JSON.stringify(newUser));
+    localStorage.setItem('user', JSON.stringify(newUser));
     setUser(newUser);
   }, []);
 
@@ -108,7 +110,7 @@ export function useAuth() {
         auto_select: false,
       });
 
-      const saved = sessionStorage.getItem('user');
+      const saved = sessionStorage.getItem('user') || localStorage.getItem('user');
       if (saved) setUser(JSON.parse(saved) as CurrentUser);
 
       setAuthReady(true);
