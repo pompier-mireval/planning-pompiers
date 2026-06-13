@@ -17,9 +17,9 @@ export function hasAccessToken()   { return !!_accessToken && Date.now() < _toke
 export async function ensureAccessToken(): Promise<void> {
   if (hasAccessToken()) return;
 
-  // Tentative de restauration depuis sessionStorage avant de rediriger
-  const token  = sessionStorage.getItem('gapi_token');
-  const expiry = parseInt(sessionStorage.getItem('gapi_token_expiry') || '0', 10);
+  // Tentative de restauration depuis localStorage avant de rediriger
+  const token  = localStorage.getItem('gapi_token');
+  const expiry = parseInt(localStorage.getItem('gapi_token_expiry') || '0', 10);
   if (token && Date.now() < expiry) {
     setAccessToken(token, Math.floor((expiry - Date.now()) / 1000));
     return;

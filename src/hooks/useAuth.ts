@@ -10,12 +10,12 @@ function parseJwt(token: string) {
   return JSON.parse(atob(base64));
 }
 
-// Clé sessionStorage pour le token OAuth
+// Clé localStorage pour le token OAuth (localStorage persiste entre onglets et rechargements)
 const TOKEN_KEY = 'gapi_token';
 const TOKEN_EXPIRY_KEY = 'gapi_token_expiry';
 
 export function requestOAuthToken() {
-  sessionStorage.setItem('oauth_return', window.location.href);
+  localStorage.setItem('oauth_return', window.location.href);
   const params = new URLSearchParams({
     client_id:     CONFIG.GOOGLE_CLIENT_ID,
     redirect_uri:  window.location.origin + window.location.pathname,
@@ -30,8 +30,8 @@ export function requestOAuthToken() {
 }
 
 function loadTokenFromStorage(): boolean {
-  const token = sessionStorage.getItem(TOKEN_KEY);
-  const expiry = parseInt(sessionStorage.getItem(TOKEN_EXPIRY_KEY) || '0', 10);
+  const token = localStorage.getItem(TOKEN_KEY);
+  const expiry = parseInt(localStorage.getItem(TOKEN_EXPIRY_KEY) || '0', 10);
   if (token && Date.now() < expiry) {
     setAccessToken(token, Math.floor((expiry - Date.now()) / 1000));
     return true;
@@ -48,8 +48,8 @@ function extractTokenFromHash(): boolean {
   if (!token) return false;
 
   const expiry = Date.now() + expiresIn * 1000;
-  sessionStorage.setItem(TOKEN_KEY, token);
-  sessionStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
   setAccessToken(token, expiresIn);
 
   // Nettoie le hash sans recharger
@@ -65,8 +65,8 @@ export function useAuth() {
   const signOut = useCallback(() => {
     try { google.accounts.id.disableAutoSelect(); } catch (_) {}
     sessionStorage.removeItem('user');
-    sessionStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(TOKEN_EXPIRY_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_EXPIRY_KEY);
     clearAccessToken();
     setUser(null);
   }, []);
