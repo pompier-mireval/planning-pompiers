@@ -1499,3 +1499,18 @@ select { font-family: inherit; }
   color: var(--text-3);
   font-size: 13px;
 }
+
+.equity-bar-labeled {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.equity-bar-side-label {
+  font-size: 10px;
+  color: var(--text-3);  /* ← remplace --text-muted */
+  white-space: nowrap;
+  width: 44px;
+  text-align: right;
+  flex-shrink: 0;
+}

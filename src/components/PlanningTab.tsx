@@ -146,19 +146,25 @@ export function PlanningTab({ data, onAffect }: Props) {
             </div>
             {/* Jauges garde + astreinte groupées sur mobile */}
             <div className="equity-bar-duo">
-              {a.g ? (
-                <EquityBar pctGarde={a.g.pctGarde} avgGarde={avgGarde} maxGarde={maxGarde} />
-              ) : (
-                <EquityBar
-                  rate={a.stat.rate}
-                  maxRate={Math.max(...agents.map(ag => stats[ag.idx]?.rate ?? 0), 0.01)}
-                />
-              )}
-              {a.g ? (
-                <EquityBarAst pctAstreinte={a.g.pctAstreinte} avgAstreinte={avgAstreinte} maxAstreinte={maxAstreinte} />
-              ) : (
-                <span className="equity-bar-wrap" />
-              )}
+              <div className="equity-bar-labeled">
+                <span className="equity-bar-side-label">Garde</span>
+                {a.g ? (
+                  <EquityBar pctGarde={a.g.pctGarde} avgGarde={avgGarde} maxGarde={maxGarde} />
+                ) : (
+                  <EquityBar
+                    rate={a.stat.rate}
+                    maxRate={Math.max(...agents.map(ag => stats[ag.idx]?.rate ?? 0), 0.01)}
+                  />
+                )}
+              </div>
+              <div className="equity-bar-labeled">
+                <span className="equity-bar-side-label">Astreinte</span>
+                {a.g ? (
+                  <EquityBarAst pctAstreinte={a.g.pctAstreinte} avgAstreinte={avgAstreinte} maxAstreinte={maxAstreinte} />
+                ) : (
+                  <span className="equity-bar-wrap" />
+                )}
+              </div>
             </div>
             {a.cell?.affect ? (
               <AffectBadge
