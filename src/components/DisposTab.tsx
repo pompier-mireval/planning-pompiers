@@ -41,7 +41,7 @@ export function DisposTab({ data, user, onUpdateDispo }: Props) {
         <div className="profile-info">
           <div className="agent-name">{agent.name}</div>
           <div className="agent-badges">
-            <QualifBadges soff={agent.soff} cond={agent.cond} />
+            <QualifBadges soff={agent.soff} cond={agent.cond} condVpf={agent.condVpf} />
           </div>
         </div>
       </div>

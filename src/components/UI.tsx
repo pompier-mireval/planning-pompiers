@@ -82,13 +82,12 @@ export function EquityBarAst({ pctAstreinte, avgAstreinte, maxAstreinte }: Equit
   );
 }
 
-export function QualifBadges({ soff, cond }: { soff: boolean; cond: boolean }) {
-  return (
-    <>
-      {soff && <span className="badge-sm badge-soff">CA FDF</span>}
-      {cond && <span className="badge-sm badge-cond">Cod 2</span>}
-    </>
-  );
+export function QualifBadges({ soff, cond, condVpf }: { soff: boolean; cond: boolean; condVpf: boolean }) {
+  return <>
+    {soff    && <span className="badge badge-soff">S/Off</span>}
+    {cond    && <span className="badge badge-cond">Cond.</span>}
+    {condVpf && <span className="badge badge-condvpf">Cond. VPF</span>}
+  </>;
 }
 
 // ── Week nav ──────────────────────────────────────────────────

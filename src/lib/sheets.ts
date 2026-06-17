@@ -64,12 +64,13 @@ export async function loadAgents(): Promise<Agent[]> {
   _agentsCache = rows
     .filter(r => r[0] && r[1])
     .map((r, i) => ({
-      idx:   i,
-      name:  r[0].trim(),
-      email: (r[1] || '').trim().toLowerCase(),
-      soff:  (r[2] || '').toUpperCase() === 'OUI',
-      cond:  (r[3] || '').toUpperCase() === 'OUI',
-      admin: (r[4] || '').toUpperCase() === 'OUI',
+      idx:      i,
+      name:     r[0].trim(),
+      email:    (r[1] || '').trim().toLowerCase(),
+      soff:     (r[2] || '').toUpperCase() === 'OUI',
+      cond:     (r[3] || '').toUpperCase() === 'OUI',
+      condVpf:  (r[4] || '').toUpperCase() === 'OUI',   // ← nouvelle colonne E
+      admin:    (r[5] || '').toUpperCase() === 'OUI',   // ← décalé en F
     }));
   return _agentsCache;
 }

@@ -1514,3 +1514,8 @@ select { font-family: inherit; }
   text-align: right;
   flex-shrink: 0;
 }
+
+.badge-condvpf {
+  background: #7c3aed;
+  color: #fff;
+}

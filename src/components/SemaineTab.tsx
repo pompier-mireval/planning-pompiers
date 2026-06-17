@@ -99,7 +99,7 @@ export function SemaineTab({ data }: Props) {
               <div className="agent-info">
                 <span className="agent-name">{a.name}</span>
                 <div className="agent-badges">
-                  <QualifBadges soff={a.soff} cond={a.cond} />
+                  <QualifBadges soff={a.soff} cond={a.cond} condVpf={a.condVpf} />
                   <span className="dispo-label">{DISPO_LABELS[cell?.dispo ?? ''] ?? cell?.dispo}</span>
                 </div>
               </div>

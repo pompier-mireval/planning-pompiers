@@ -1,10 +1,11 @@
 export interface Agent {
-  idx: number;
-  name: string;
-  email: string;
-  soff: boolean;
-  cond: boolean;
-  admin: boolean;
+  idx:      number;
+  name:     string;
+  email:    string;
+  soff:     boolean;
+  cond:     boolean;
+  condVpf:  boolean;   // ← nouveau
+  admin:    boolean;
 }
 
 export interface CurrentUser {
