@@ -63,15 +63,15 @@ export function affectClass(affect: string): string {
   if (a.startsWith('AST') || a.startsWith('GIFF')) return 'af-ast';
   if (a.startsWith('VPF'))                        return 'af-vpf';
   if (a.includes('COND') || a.includes('CDG'))    return 'af-cond';
+  if (a.startsWith('SOLL'))                       return 'af-soll';  // ← ajouté
   return 'af-other';
 }
-
 export const DISPO_LABELS: Record<string, string> = { J: 'Journée', M: 'Matin', AM: 'Après-midi' };
 
 export const TYPES_GARDE = [
   'GRR Journée', 'GRR Matin', 'GRR Après-midi',
   'AST Journée', 'AST Matin', 'AST Après-midi',
-  'VPF', 'GFF', 'Cond. CDG',
+  'VPF', 'GFF', 'Cond. CDG', 'Sollicitable',   // ← ajouté
 ];
 
 export function colLetter(n: number): string {
