@@ -608,9 +608,9 @@ select { font-family: inherit; }
   transition: width 0.4s ease;
 }
 
-.fill-low  { background: var(--green); }
+.fill-low  { background: var(--red); }
 .fill-mid  { background: var(--amber); }
-.fill-high { background: var(--red); }
+.fill-high { background: var(--green); }
 
 .equity-pct {
   font-size: 11px;
