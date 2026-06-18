@@ -79,7 +79,7 @@ let _agentsCache: Agent[] | null = null;
 
 export async function loadAgents(): Promise<Agent[]> {
   if (_agentsCache) return _agentsCache;
-  const rows = await sheetsGet(CONFIG.SHEETS.AGENTS + '!A2:E100');
+  const rows = await sheetsGet(CONFIG.SHEETS.AGENTS + '!A2:F100');
   _agentsCache = rows
     .filter(r => r[0] && r[1])
     .map((r, i) => ({
