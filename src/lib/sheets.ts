@@ -42,17 +42,36 @@ async function sheetsGet(range: string): Promise<string[][]> {
 export async function sheetsUpdate(range: string, values: string[][]): Promise<void> {
   await ensureAccessToken();
   const url = `${BASE}/${CONFIG.SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`;
-  const r = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      Authorization: 'Bearer ' + _accessToken,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ values }),
-  });
-  if (!r.ok) {
-    const err = await r.json();
-    throw new Error('Sheets PUT error: ' + JSON.stringify(err));
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); // 10s max
+
+  try {
+    const r = await fetch(url, {
+      method: 'PUT',
+      signal: controller.signal,
+      headers: {
+        Authorization: 'Bearer ' + _accessToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ values }),
+    });
+    if (!r.ok) {
+      const err = await r.json();
+      // Token expiré ou invalide → forcer re-auth
+      if (r.status === 401) {
+        clearAccessToken();
+        localStorage.removeItem('pp_token');
+        localStorage.removeItem('pp_token_expiry');
+        throw new Error('NEED_USER_GESTURE');
+      }
+      throw new Error('Sheets PUT error: ' + JSON.stringify(err));
+    }
+  } catch (e: any) {
+    if (e.name === 'AbortError') throw new Error('Délai dépassé — vérifie ta connexion.');
+    throw e;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

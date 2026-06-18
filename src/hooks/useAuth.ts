@@ -51,11 +51,12 @@ function getTokenClient(email: string, resolve: () => void, reject: (e: Error) =
   return _tokenClient;
 }
 
-// Demande le token sans interaction (silencieux)
+// Demande le token sans interaction (silencieux) — avec timeout pour Safari ITP
 function requestTokenSilent(email: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const client = getTokenClient(email, resolve, reject);
-    client.requestAccessToken({ prompt: '' }); // '' = silencieux sans popup
+    const timer = setTimeout(() => reject(new Error('NEED_USER_GESTURE')), 5000);
+    const client = getTokenClient(email, () => { clearTimeout(timer); resolve(); }, (e) => { clearTimeout(timer); reject(e); });
+    client.requestAccessToken({ prompt: '' });
   });
 }
 
