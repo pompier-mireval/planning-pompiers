@@ -55,7 +55,7 @@ export function SemaineTab({ data }: Props) {
   return (
     <div className="tab-content">
       <WeekNav wStart={wStart} maxOffset={MAX_OFFSET} onShift={delta => {
-        const next = weekStart(Math.max(0, Math.min(MAX_OFFSET, wStart + delta * 7)));
+        const next = weekStart(Math.max(0, Math.min(MAX_OFFSET, wStart + delta)));
         setWStart(next);
         setDay(next);
       }} />
