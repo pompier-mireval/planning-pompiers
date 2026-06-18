@@ -86,7 +86,7 @@ export function PlanningTab({ data, onAffect }: Props) {
     <div className="tab-content">
       {/* Week navigator */}
       <WeekNav wStart={wStart} maxOffset={MAX_OFFSET} onShift={delta => {
-        const next = Math.max(0, Math.min(MAX_OFFSET, wStart + delta));
+        const next = weekStart(Math.max(0, Math.min(MAX_OFFSET, wStart + delta * 7)));
         setWStart(next);
         setDayOffset(next);
       }} />

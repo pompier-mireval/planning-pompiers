@@ -27,11 +27,14 @@ export function todayOffset(): number {
   return daysBetween(SAISON_START, clampDate(new Date()));
 }
 
-/** Offset du lundi de la semaine contenant `offset` */
+/** Offset du lundi de la semaine contenant `offset`.
+ *  Si ce lundi précède le début de saison, retourne 0
+ *  (première semaine tronquée = mer. 1er juil. → dim.). */
 export function weekStart(offset: number): number {
   const d = offsetToDate(offset);
   const dow = (d.getDay() + 6) % 7; // lundi = 0
-  return Math.max(0, offset - dow);
+  const monday = offset - dow;
+  return monday < 0 ? 0 : monday;
 }
 
 export function weekRangeLabel(wStart: number): string {

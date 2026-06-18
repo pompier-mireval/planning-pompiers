@@ -47,7 +47,7 @@ export function DisposTab({ data, user, onUpdateDispo }: Props) {
       </div>
 
       <WeekNav wStart={wStart} maxOffset={MAX_OFFSET} onShift={delta =>
-        setWStart(Math.max(0, Math.min(MAX_OFFSET, wStart + delta)))
+        setWStart(weekStart(Math.max(0, Math.min(MAX_OFFSET, wStart + delta * 7))))
       } />
 
       <div className="card">
