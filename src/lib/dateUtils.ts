@@ -37,9 +37,18 @@ export function weekStart(offset: number): number {
   return monday < 0 ? 0 : monday;
 }
 
+/** Nombre de jours à afficher pour cette semaine.
+ *  Première semaine tronquée (commence un mercredi) = 5 jours,
+ *  toutes les autres = 7 jours. */
+export function weekLength(wStart: number): number {
+  if (wStart !== 0) return 7;
+  const dow = (SAISON_START.getDay() + 6) % 7; // 0=lun … 6=dim
+  return 7 - dow; // mer(2) → 5 jours
+}
+
 export function weekRangeLabel(wStart: number): string {
   const d1 = offsetToDate(wStart);
-  const d2 = offsetToDate(Math.min(wStart + 6, MAX_OFFSET));
+  const d2 = offsetToDate(Math.min(wStart + weekLength(wStart) - 1, MAX_OFFSET));
   const fmt: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
   return `${d1.toLocaleDateString('fr-FR', fmt)} – ${d2.toLocaleDateString('fr-FR', fmt)}`;
 }

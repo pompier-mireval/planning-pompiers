@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { AppData } from '../hooks/useAppData';
 import {
-  offsetToDate, todayOffset, weekStart, weekRangeLabel,
+  offsetToDate, todayOffset, weekStart, weekRangeLabel, weekLength,
   getEquipe, affectClass, DISPO_LABELS, capitalize, MAX_OFFSET,
 } from '../lib/dateUtils';
 import { EquipeBadge, EquityBar, EquityBarAst, QualifBadges, WeekNav, AffectBadge } from './UI';
@@ -29,7 +29,7 @@ export function PlanningTab({ data, onAffect }: Props) {
   const { agents, cells, gardes, stats, gestion } = data;
 
   const weekDays: number[] = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < weekLength(wStart); i++) {
     const o = wStart + i;
     if (o <= MAX_OFFSET) weekDays.push(o);
   }

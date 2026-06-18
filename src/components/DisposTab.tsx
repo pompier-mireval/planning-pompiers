@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { AppData } from '../hooks/useAppData';
 import type { CurrentUser } from '../lib/types';
 import {
-  offsetToDate, todayOffset, weekStart, getEquipe, capitalize, MAX_OFFSET,
+  offsetToDate, todayOffset, weekStart, weekLength, getEquipe, capitalize, MAX_OFFSET,
 } from '../lib/dateUtils';
 import { EquipeBadge, WeekNav, QualifBadges } from './UI';
 
@@ -25,7 +25,7 @@ export function DisposTab({ data, user, onUpdateDispo }: Props) {
 
   const today = todayOffset();
   const days: { offset: number; date: Date }[] = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < weekLength(wStart); i++) {
     const o = wStart + i;
     if (o > MAX_OFFSET) break;
     days.push({ offset: o, date: offsetToDate(o) });

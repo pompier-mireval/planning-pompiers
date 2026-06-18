@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { AppData } from '../hooks/useAppData';
 import {
-  offsetToDate, todayOffset, weekStart, getEquipe,
+  offsetToDate, todayOffset, weekStart, weekLength, getEquipe,
   affectClass, DISPO_LABELS, capitalize, MAX_OFFSET,
 } from '../lib/dateUtils';
 import { WeekNav, EquipeBadge, QualifBadges } from './UI';
@@ -27,7 +27,7 @@ export function SemaineTab({ data }: Props) {
   const today = todayOffset();
 
   const weekDays: { offset: number; date: Date }[] = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < weekLength(wStart); i++) {
     const o = wStart + i;
     if (o > MAX_OFFSET) break;
     weekDays.push({ offset: o, date: offsetToDate(o) });
