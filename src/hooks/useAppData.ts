@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { loadAgents, loadSaisonData, parseSaisonData, saveCellValue, loadGestionData } from '../lib/sheets';
 import { todayOffset } from '../lib/dateUtils';
 import type { Agent, CellMap, GardeMap, AgentStats, GestionMap } from '../lib/types';
+import { requestTokenWithConsent } from './useAuth';
 
 export interface AppData {
   agents: Agent[];
@@ -33,6 +34,7 @@ export function useAppData() {
   const [error, setError]     = useState<string | null>(null);
   const [saving, setSaving]   = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [needsAuth, setNeedsAuth] = useState(false);
   const dataRef = useRef<AppData | null>(null);
   dataRef.current = data;
 
@@ -82,7 +84,11 @@ export function useAppData() {
         return { ...prev, cells: newCells, stats: computeStats(prev.agents, newCells) };
       });
     } catch (e: any) {
-      setSaveError(e.message || 'Erreur lors de la sauvegarde');
+      if (e.message === 'NEED_USER_GESTURE') {
+        setNeedsAuth(true);
+      } else {
+        setSaveError(e.message || 'Erreur lors de la sauvegarde');
+      }
     } finally {
       setSaving(false);
     }
@@ -105,11 +111,15 @@ export function useAppData() {
         return { ...prev, cells: newCells, stats: computeStats(prev.agents, newCells) };
       });
     } catch (e: any) {
-      setSaveError(e.message || 'Erreur lors de la sauvegarde');
+      if (e.message === 'NEED_USER_GESTURE') {
+        setNeedsAuth(true);
+      } else {
+        setSaveError(e.message || 'Erreur lors de la sauvegarde');
+      }
     } finally {
       setSaving(false);
     }
   }, []);
 
-  return { data, loading, error, saving, saveError, refresh, updateDispo, updateAffect };
+  return { data, loading, error, saving, saveError, needsAuth, setNeedsAuth, requestTokenWithConsent, refresh, updateDispo, updateAffect };
 }

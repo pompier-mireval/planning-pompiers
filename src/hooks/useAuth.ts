@@ -25,51 +25,59 @@ function loadTokenFromStorage(): boolean {
   return false;
 }
 
-// Demande le token OAuth via popup (sans redirect page entière)
-function requestTokenViaPopup(hint: string): Promise<void> {
+// Sauvegarde le token OAuth après réception
+function storeToken(resp: any): void {
+  const expiresIn = parseInt(resp.expires_in || '3400', 10);
+  const expiry    = Date.now() + expiresIn * 1000;
+  localStorage.setItem(TOKEN_KEY, resp.access_token);
+  localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
+  setAccessToken(resp.access_token, expiresIn);
+}
+
+// Client OAuth réutilisable (évite de le recréer à chaque fois)
+let _tokenClient: any = null;
+
+function getTokenClient(email: string, resolve: () => void, reject: (e: Error) => void) {
+  _tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CONFIG.GOOGLE_CLIENT_ID,
+    scope:     'https://www.googleapis.com/auth/spreadsheets',
+    login_hint: email,
+    callback:  (resp: any) => {
+      if (resp.error) { reject(new Error(resp.error)); return; }
+      storeToken(resp);
+      resolve();
+    },
+  });
+  return _tokenClient;
+}
+
+// Demande le token sans interaction (silencieux)
+function requestTokenSilent(email: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: CONFIG.GOOGLE_CLIENT_ID,
-      scope:     'https://www.googleapis.com/auth/spreadsheets',
-      hint,
-      callback:  (resp: any) => {
-        if (resp.error) { reject(new Error(resp.error)); return; }
-        const expiresIn = parseInt(resp.expires_in || '3400', 10);
-        const expiry    = Date.now() + expiresIn * 1000;
-        localStorage.setItem(TOKEN_KEY, resp.access_token);
-        localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
-        setAccessToken(resp.access_token, expiresIn);
-        resolve();
-      },
-    });
-    client.requestAccessToken({ prompt: 'none' }); // silent si déjà autorisé
+    const client = getTokenClient(email, resolve, reject);
+    client.requestAccessToken({ prompt: '' }); // '' = silencieux sans popup
+  });
+}
+
+// Demande le token avec popup de consentement (doit être appelé dans un handler utilisateur synchrone)
+export function requestTokenWithConsent(email: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const client = getTokenClient(email, resolve, reject);
+    client.requestAccessToken({ prompt: 'consent' });
   });
 }
 
 export async function ensureOAuthToken(email: string): Promise<void> {
   if (hasAccessToken()) return;
   if (loadTokenFromStorage()) return;
-  // Tente silencieux d'abord, puis avec consentement si nécessaire
+  // Tentative silencieuse d'abord
   try {
-    await requestTokenViaPopup(email);
+    await requestTokenSilent(email);
   } catch {
-    await new Promise<void>((resolve, reject) => {
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: CONFIG.GOOGLE_CLIENT_ID,
-        scope:     'https://www.googleapis.com/auth/spreadsheets',
-        hint:      email,
-        callback:  (resp: any) => {
-          if (resp.error) { reject(new Error(resp.error)); return; }
-          const expiresIn = parseInt(resp.expires_in || '3400', 10);
-          const expiry    = Date.now() + expiresIn * 1000;
-          localStorage.setItem(TOKEN_KEY, resp.access_token);
-          localStorage.setItem(TOKEN_EXPIRY_KEY, String(expiry));
-          setAccessToken(resp.access_token, expiresIn);
-          resolve();
-        },
-      });
-      client.requestAccessToken({ prompt: 'consent' });
-    });
+    // Sur Safari, la tentative silencieuse échoue souvent.
+    // On lève une erreur spéciale pour que l'appelant puisse
+    // demander à l'utilisateur d'autoriser manuellement.
+    throw new Error('NEED_USER_GESTURE');
   }
 }
 

@@ -13,7 +13,7 @@ import type { Tab } from './lib/types';
 
 export default function App() {
   const { user, loading: authLoading, authReady, signOut } = useAuth();
-  const { data, loading: dataLoading, error, saving, saveError, refresh, updateDispo, updateAffect } = useAppData();
+  const { data, loading: dataLoading, error, saving, saveError, needsAuth, setNeedsAuth, requestTokenWithConsent, refresh, updateDispo, updateAffect } = useAppData();
   const [tab, setTab]           = useState<Tab>('semaine');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === '1');
 
@@ -60,6 +60,22 @@ export default function App() {
         <main className="main-content">
           {error && <ErrorBanner message={error} />}
           {saveError && <ErrorBanner message={saveError} />}
+          {needsAuth && (
+            <div className="error-banner" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <span>⚠️ Autorisation Google requise pour enregistrer les disponibilités.</span>
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  // Doit être appelé directement dans un onClick (geste utilisateur)
+                  requestTokenWithConsent(user.email)
+                    .then(() => setNeedsAuth(false))
+                    .catch(() => {});
+                }}
+              >
+                Autoriser l'accès
+              </button>
+            </div>
+          )}
 
           {dataLoading ? (
             <div className="loading-state">
