@@ -1524,3 +1524,214 @@ select { font-family: inherit; }
   background: #f97316;
   color: #fff;
 }
+/* ═══════════════════════════════════════════════════════════════
+   QUOTAS — Postes du jour (PlanningTab)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Section container */
+.quota-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.quota-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.quota-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+}
+
+.quota-edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.quota-edit-btn:hover {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+/* Grid of bars */
+.qbar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 480px) {
+  .qbar-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.qbar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.qbar-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.qbar-track {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.qbar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.qbar-fill.qbar-empty   { width: 0%; }
+.qbar-fill.qbar-partial { background: #f59e0b; }
+.qbar-fill.qbar-full    { background: var(--brand); }
+
+.qbar-count {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.qbar-count.qbar-count-full {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+/* ── Quota recap chips in modal ─────────────────────────── */
+.quota-recap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.quota-chip {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  border: 1px solid;
+}
+
+.quota-chip.quota-empty {
+  border-color: var(--border);
+  color: var(--muted);
+  background: transparent;
+}
+
+.quota-chip.quota-partial {
+  border-color: #78350f;
+  color: #f59e0b;
+  background: rgba(245,158,11,0.08);
+}
+
+.quota-chip.quota-full {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: rgba(220,38,38,0.1);
+}
+
+/* ── Type groups in modal ───────────────────────────────── */
+.type-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.type-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* ── Quota editor modal ─────────────────────────────────── */
+.quota-editor-modal {
+  max-width: 340px;
+}
+
+.quota-editor-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.quota-editor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quota-editor-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 90px;
+}
+
+.quota-editor-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quota-step-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.quota-step-btn:hover {
+  background: var(--border);
+}
+
+.quota-editor-val {
+  font-size: 18px;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
