@@ -77,7 +77,7 @@ export function computeDayFill(cells: CellMap, offset: number): DayFill {
       fill.ast += 1;
     } else if (a.startsWith('VPF')) {
       fill.vpf += 1;
-    } else if (a.includes('COND') || a.includes('CDG')) {
+    } else if (a.includes('COND')) {
       fill.cond += 1;
     } else if (a.startsWith('GFF')) {
       fill.gff += 1;
@@ -93,7 +93,7 @@ export function affectCategory(affect: string): keyof DayFill | null {
   if (a.startsWith('GRR'))                         return 'grr';
   if (a.startsWith('AST') || a.startsWith('GIFF')) return 'ast';
   if (a.startsWith('VPF'))                         return 'vpf';
-  if (a.includes('COND') || a.includes('CDG'))     return 'cond';
+  if (a.includes('COND'))     return 'cond';
   if (a.startsWith('GFF'))                         return 'gff';
   return null; // Sollicitable → pas de quota
 }
