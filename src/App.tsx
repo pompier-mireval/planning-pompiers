@@ -13,7 +13,7 @@ import type { Tab } from './lib/types';
 
 export default function App() {
   const { user, loading: authLoading, authReady, signOut } = useAuth();
-  const { data, loading: dataLoading, error, saving, saveError, needsAuth, setNeedsAuth, requestTokenWithConsent, refresh, updateDispo, updateAffect } = useAppData();
+  const { data, loading: dataLoading, error, saving, saveError, needsAuth, setNeedsAuth, requestTokenWithConsent, refresh, updateDispo, updateAffect, updateQuota } = useAppData();
   const [tab, setTab]           = useState<Tab>('semaine');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === '1');
 
@@ -89,7 +89,7 @@ export default function App() {
           ) : (
             <>
               {tab === 'planning' && user.isAdmin && (
-                <PlanningTab data={data} onAffect={updateAffect} />
+                <PlanningTab data={data} onAffect={updateAffect} onUpdateQuota={updateQuota} />
               )}
               {tab === 'semaine' && (
                 <SemaineTab data={data} />

@@ -1,6 +1,8 @@
 import { CONFIG } from './config';
 import { colLetter, parseSheetDate, daysBetween, SAISON_START, MAX_OFFSET } from './dateUtils';
-import type { Agent, CellMap, GardeMap, GestionMap, AgentGestionStats } from './types';
+import type { Agent, CellMap, GardeMap, GestionMap, AgentGestionStats, QuotaMap, QuotaCellMap } from './types';
+import { parseQuotaCell, serializeQuotas } from './quotas';
+import type { DayQuotas } from './quotas';
 
 const BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 
@@ -149,13 +151,23 @@ export async function loadGestionData(): Promise<GestionMap> {
 export function parseSaisonData(
   rows: string[][],
   agents: Agent[]
-): { cells: CellMap; gardes: GardeMap } {
-  const cells: CellMap  = {};
-  const gardes: GardeMap = {};
-  if (!rows || rows.length < 3) return { cells, gardes };
+): { cells: CellMap; gardes: GardeMap; quotas: QuotaMap; quotaCells: QuotaCellMap } {
+  const cells: CellMap         = {};
+  const gardes: GardeMap       = {};
+  const quotas: QuotaMap       = {};
+  const quotaCells: QuotaCellMap = {};
+
+  if (!rows || rows.length < 3) return { cells, gardes, quotas, quotaCells };
 
   const headerRow = rows[0] || [];
   const gardeRow  = rows[1] || [];
+
+  // Row index 2 : ligne "Quotas" (A2 = "Quotas", puis valeurs dans les colonnes Dispo)
+  // Row index 3 : labels "Dispo" / "Affect."
+  // Row index 4+ : agents
+  const quotaRow     = rows[2] || [];
+  const agentStartRow = 4; // décalé de 3 → 4 suite à l'ajout de la ligne Quotas
+
   const dayColMap: Record<number, { dispoCol: number; affectCol: number }> = {};
 
   for (let c = 1; c < headerRow.length; c += 2) {
@@ -164,12 +176,21 @@ export function parseSaisonData(
     const offset = daysBetween(SAISON_START, d);
     if (offset >= 0 && offset <= MAX_OFFSET) {
       dayColMap[offset] = { dispoCol: c + 1, affectCol: c + 2 };
+
+      // Équipe
       const gardeVal = (gardeRow[c] || gardeRow[c + 1] || '').trim();
       if (gardeVal) gardes[offset] = gardeVal;
+
+      // Quotas — dans la colonne Dispo (c+1, 1-indexé) de la ligne Quotas (row 3)
+      const rawQuota = (quotaRow[c] || '').trim();
+      quotas[offset] = parseQuotaCell(rawQuota);
+      quotaCells[offset] = {
+        sheetRow: 3,        // ligne 3 dans le sheet (1-indexé)
+        dispoCol: c + 1,    // colonne Dispo du jour (1-indexé)
+      };
     }
   }
 
-  const agentStartRow = 3;
   const agentRowMap: Record<number, number> = {};
   for (let r = agentStartRow; r < rows.length; r++) {
     const rowName = (rows[r][0] || '').trim().toLowerCase();
@@ -195,7 +216,14 @@ export function parseSaisonData(
     }
   }
 
-  return { cells, gardes };
+  return { cells, gardes, quotas, quotaCells };
+}
+
+/** Sauvegarde les quotas d'un jour dans le sheet (ligne Quotas, colonne Dispo du jour) */
+export async function saveQuotaValue(offset: number, quotaCells: QuotaCellMap, q: DayQuotas): Promise<void> {
+  const qc = quotaCells[offset];
+  if (!qc) throw new Error(`Pas de cellule quota pour l'offset ${offset}`);
+  await saveCellValue(qc.sheetRow, qc.dispoCol, serializeQuotas(q));
 }
 
 export async function saveCellValue(sheetRow: number, sheetCol: number, value: string): Promise<void> {

@@ -1,17 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import type { AppData } from '../hooks/useAppData';
 import {
-  offsetToDate, todayOffset, weekStart, weekRangeLabel, weekLength,
-  getEquipe, affectClass, DISPO_LABELS, capitalize, MAX_OFFSET,
+  offsetToDate, todayOffset, weekStart, weekLength,
+  getEquipe, DISPO_LABELS, capitalize, MAX_OFFSET,
 } from '../lib/dateUtils';
 import { EquipeBadge, EquityBar, EquityBarAst, QualifBadges, WeekNav, AffectBadge } from './UI';
 import { AffectModal } from './AffectModal';
-import { loadQuotas, saveQuotas, computeDayFill, DEFAULT_QUOTAS } from '../lib/quotas';
+import { computeDayFill, EMPTY_QUOTAS, isEmptyQuotas } from '../lib/quotas';
 import type { DayQuotas } from '../lib/quotas';
 
 interface Props {
   data: AppData;
   onAffect: (offset: number, agentIdx: number, value: string) => Promise<void>;
+  onUpdateQuota: (offset: number, q: DayQuotas) => Promise<void>;
 }
 
 interface ModalState {
@@ -23,11 +24,12 @@ interface ModalState {
   currentAffect?: string;
 }
 
-// ── Quota fill bar ────────────────────────────────────────────
+// ── Barre de quota individuelle ───────────────────────────────
 function QuotaBar({ label, fill, quota }: { label: string; fill: number; quota: number }) {
-  const pct = quota > 0 ? Math.min(100, (fill / quota) * 100) : 0;
-  const full = fill >= quota;
-  const cls  = full ? 'qbar-full' : fill > 0 ? 'qbar-partial' : 'qbar-empty';
+  if (quota === 0) return null; // pas défini pour ce jour → on n'affiche pas
+  const pct  = Math.min(100, (fill / quota) * 100);
+  const full  = fill >= quota;
+  const cls   = full ? 'qbar-full' : fill > 0 ? 'qbar-partial' : 'qbar-empty';
   return (
     <div className="qbar-item">
       <div className="qbar-label">{label}</div>
@@ -41,9 +43,10 @@ function QuotaBar({ label, fill, quota }: { label: string; fill: number; quota: 
   );
 }
 
-// ── Quota editor (admin panel) ────────────────────────────────
-function QuotaEditor({ quotas, onSave, onClose }: {
+// ── Éditeur de quotas (modale inline) ────────────────────────
+function QuotaEditor({ quotas, dayLabel, onSave, onClose }: {
   quotas: DayQuotas;
+  dayLabel: string;
   onSave: (q: DayQuotas) => void;
   onClose: () => void;
 }) {
@@ -63,8 +66,8 @@ function QuotaEditor({ quotas, onSave, onClose }: {
         <div className="modal-drag-handle" />
         <div className="modal-header">
           <div>
-            <h2 className="modal-title">Quotas par jour</h2>
-            <p className="modal-sub">Nombre de postes requis chaque jour</p>
+            <h2 className="modal-title">Quotas — {dayLabel}</h2>
+            <p className="modal-sub">Postes requis pour ce jour · 0 = pas de limite</p>
           </div>
         </div>
         <div className="quota-editor-fields">
@@ -86,7 +89,7 @@ function QuotaEditor({ quotas, onSave, onClose }: {
           ))}
         </div>
         <div className="modal-actions">
-          <button className="btn-confirm" onClick={() => onSave(draft)}>Enregistrer</button>
+          <button className="btn-confirm" onClick={() => onSave(draft)}>Enregistrer dans le Sheet</button>
           <button className="btn-cancel" onClick={onClose}>Annuler</button>
         </div>
       </div>
@@ -94,15 +97,14 @@ function QuotaEditor({ quotas, onSave, onClose }: {
   );
 }
 
-// ── Main PlanningTab ──────────────────────────────────────────
-export function PlanningTab({ data, onAffect }: Props) {
-  const [dayOffset, setDayOffset]     = useState(() => todayOffset());
-  const [wStart, setWStart]           = useState(() => weekStart(todayOffset()));
-  const [modal, setModal]             = useState<ModalState>({ open: false, agentIdx: 0, agentName: '', dispo: '', dayOffset: 0 });
-  const [quotas, setQuotas]           = useState<DayQuotas>(() => loadQuotas());
+// ── PlanningTab ───────────────────────────────────────────────
+export function PlanningTab({ data, onAffect, onUpdateQuota }: Props) {
+  const [dayOffset, setDayOffset]         = useState(() => todayOffset());
+  const [wStart, setWStart]               = useState(() => weekStart(todayOffset()));
+  const [modal, setModal]                 = useState<ModalState>({ open: false, agentIdx: 0, agentName: '', dispo: '', dayOffset: 0 });
   const [showQuotaEditor, setShowQuotaEditor] = useState(false);
 
-  const { agents, cells, gardes, stats, gestion } = data;
+  const { agents, cells, gardes, stats, gestion, quotas } = data;
 
   const weekDays: number[] = [];
   for (let i = 0; i < weekLength(wStart); i++) {
@@ -110,21 +112,16 @@ export function PlanningTab({ data, onAffect }: Props) {
     if (o <= MAX_OFFSET) weekDays.push(o);
   }
 
-  const dayCells = cells[dayOffset] || {};
-  const today    = todayOffset();
+  const dayCells   = cells[dayOffset] || {};
+  const today      = todayOffset();
+  const dayQuotas  = quotas[dayOffset] ?? EMPTY_QUOTAS;
+  const dayFill    = useMemo(() => computeDayFill(cells, dayOffset), [cells, dayOffset]);
+  const hasQuotas  = !isEmptyQuotas(dayQuotas);
 
-  // Remplissage quotas du jour sélectionné
-  const dayFill = useMemo(() => computeDayFill(cells, dayOffset), [cells, dayOffset]);
-
-  // Moyennes et max depuis Gestion 2026
-  const allGestion = agents.map(a => gestion[a.name.toLowerCase()] ?? null);
-  const gestionValid = allGestion.filter(Boolean);
-  const avgGarde     = gestionValid.length
-    ? gestionValid.reduce((s, g) => s + (g?.pctGarde ?? 0), 0) / gestionValid.length
-    : 0;
-  const avgAstreinte = gestionValid.length
-    ? gestionValid.reduce((s, g) => s + (g?.pctAstreinte ?? 0), 0) / gestionValid.length
-    : 0;
+  // Stats Gestion 2026
+  const gestionValid = agents.map(a => gestion[a.name.toLowerCase()] ?? null).filter(Boolean);
+  const avgGarde     = gestionValid.length ? gestionValid.reduce((s, g) => s + (g?.pctGarde ?? 0), 0) / gestionValid.length : 0;
+  const avgAstreinte = gestionValid.length ? gestionValid.reduce((s, g) => s + (g?.pctAstreinte ?? 0), 0) / gestionValid.length : 0;
   const maxGarde     = Math.max(...gestionValid.map(g => g?.pctGarde ?? 0), 0.01);
   const maxAstreinte = Math.max(...gestionValid.map(g => g?.pctAstreinte ?? 0), 0.01);
 
@@ -142,10 +139,6 @@ export function PlanningTab({ data, onAffect }: Props) {
       return pA - pB;
     });
 
-  function openModal(agentIdx: number, agentName: string, dispo: string, offset: number, currentAffect?: string) {
-    setModal({ open: true, agentIdx, agentName, dispo, dayOffset: offset, currentAffect });
-  }
-
   async function handleConfirm(type: string) {
     await onAffect(modal.dayOffset, modal.agentIdx, type);
     setModal(m => ({ ...m, open: false }));
@@ -156,9 +149,8 @@ export function PlanningTab({ data, onAffect }: Props) {
     setModal(m => ({ ...m, open: false }));
   }
 
-  function handleSaveQuotas(q: DayQuotas) {
-    saveQuotas(q);
-    setQuotas(q);
+  async function handleSaveQuota(q: DayQuotas) {
+    await onUpdateQuota(dayOffset, q);
     setShowQuotaEditor(false);
   }
 
@@ -166,7 +158,6 @@ export function PlanningTab({ data, onAffect }: Props) {
   const eq       = getEquipe(dayOffset, gardes);
   const dayLabel = capitalize(d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }));
 
-  // Labels pour les barres quota
   const quotaBars: { key: keyof typeof dayFill; label: string }[] = [
     { key: 'grr',  label: 'GRR' },
     { key: 'ast',  label: 'AST' },
@@ -177,14 +168,13 @@ export function PlanningTab({ data, onAffect }: Props) {
 
   return (
     <div className="tab-content">
-      {/* Week navigator */}
       <WeekNav wStart={wStart} maxOffset={MAX_OFFSET} onShift={delta => {
         const next = weekStart(Math.max(0, Math.min(MAX_OFFSET, wStart + delta)));
         setWStart(next);
         setDayOffset(next);
       }} />
 
-      {/* Mini week calendar */}
+      {/* Mini calendrier semaine */}
       <div className="mini-cal">
         {weekDays.map(o => {
           const dd = offsetToDate(o);
@@ -203,32 +193,42 @@ export function PlanningTab({ data, onAffect }: Props) {
         })}
       </div>
 
-      {/* Day header */}
+      {/* Header du jour */}
       <div className="day-header">
         <span className="day-header-label">{dayLabel}</span>
         <EquipeBadge label={eq} />
       </div>
 
-      {/* ── Quota bars ── */}
+      {/* ── Section quotas ── */}
       <div className="quota-section">
         <div className="quota-section-header">
-          <span className="quota-section-title">Postes du jour</span>
-          <button className="quota-edit-btn" onClick={() => setShowQuotaEditor(true)} title="Modifier les quotas">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="14" height="14">
+          <span className="quota-section-title">
+            Postes du jour
+            {!hasQuotas && <span className="quota-not-set"> — non configurés</span>}
+          </span>
+          <button className="quota-edit-btn" onClick={() => setShowQuotaEditor(true)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
-            Modifier
+            {hasQuotas ? 'Modifier' : 'Définir'}
           </button>
         </div>
-        <div className="qbar-grid">
-          {quotaBars.map(({ key, label }) => (
-            <QuotaBar key={key} label={label} fill={dayFill[key]} quota={quotas[key]} />
-          ))}
-        </div>
+
+        {hasQuotas ? (
+          <div className="qbar-grid">
+            {quotaBars.map(({ key, label }) => (
+              <QuotaBar key={key} label={label} fill={dayFill[key]} quota={dayQuotas[key]} />
+            ))}
+          </div>
+        ) : (
+          <p className="quota-empty-hint">
+            Clique sur « Définir » pour configurer les postes requis ce jour. Les quotas sont propres à chaque jour et sauvegardés dans le Sheet.
+          </p>
+        )}
       </div>
 
-      {/* Agent list */}
+      {/* Liste agents */}
       <div className="card">
         <div className="card-title">Agents disponibles · du moins chargé au plus chargé</div>
         {available.length > 0 && (
@@ -262,10 +262,7 @@ export function PlanningTab({ data, onAffect }: Props) {
                 {a.g ? (
                   <EquityBar pctGarde={a.g.pctGarde} avgGarde={avgGarde} maxGarde={maxGarde} />
                 ) : (
-                  <EquityBar
-                    rate={a.stat.rate}
-                    maxRate={Math.max(...agents.map(ag => stats[ag.idx]?.rate ?? 0), 0.01)}
-                  />
+                  <EquityBar rate={a.stat.rate} maxRate={Math.max(...agents.map(ag => stats[ag.idx]?.rate ?? 0), 0.01)} />
                 )}
               </div>
               <div className="equity-bar-labeled">
@@ -280,12 +277,12 @@ export function PlanningTab({ data, onAffect }: Props) {
             {a.cell?.affect ? (
               <AffectBadge
                 affect={a.cell.affect}
-                onClick={() => openModal(a.idx, a.name, a.cell!.dispo, dayOffset, a.cell!.affect)}
+                onClick={() => setModal({ open: true, agentIdx: a.idx, agentName: a.name, dispo: a.cell!.dispo, dayOffset, currentAffect: a.cell!.affect })}
               />
             ) : (
               <button
                 className="btn-assign"
-                onClick={() => openModal(a.idx, a.name, a.cell!.dispo, dayOffset)}
+                onClick={() => setModal({ open: true, agentIdx: a.idx, agentName: a.name, dispo: a.cell!.dispo, dayOffset })}
               >
                 Affecter
               </button>
@@ -298,11 +295,10 @@ export function PlanningTab({ data, onAffect }: Props) {
         open={modal.open}
         agentName={modal.agentName}
         dispo={modal.dispo}
-        rate={gestion[agents[modal.agentIdx]?.name?.toLowerCase()]?.pctGarde
-              ?? stats[modal.agentIdx]?.rate ?? 0}
+        rate={gestion[agents[modal.agentIdx]?.name?.toLowerCase()]?.pctGarde ?? stats[modal.agentIdx]?.rate ?? 0}
         currentAffect={modal.currentAffect}
         fill={dayFill}
-        quotas={quotas}
+        quotas={dayQuotas}
         onConfirm={handleConfirm}
         onDelete={handleDelete}
         onClose={() => setModal(m => ({ ...m, open: false }))}
@@ -310,8 +306,9 @@ export function PlanningTab({ data, onAffect }: Props) {
 
       {showQuotaEditor && (
         <QuotaEditor
-          quotas={quotas}
-          onSave={handleSaveQuotas}
+          quotas={dayQuotas}
+          dayLabel={dayLabel}
+          onSave={handleSaveQuota}
           onClose={() => setShowQuotaEditor(false)}
         />
       )}

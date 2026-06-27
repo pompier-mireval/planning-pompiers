@@ -1,15 +1,18 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { loadAgents, loadSaisonData, parseSaisonData, saveCellValue, loadGestionData } from '../lib/sheets';
+import { loadAgents, loadSaisonData, parseSaisonData, saveCellValue, loadGestionData, saveQuotaValue } from '../lib/sheets';
 import { todayOffset } from '../lib/dateUtils';
-import type { Agent, CellMap, GardeMap, AgentStats, GestionMap } from '../lib/types';
+import type { Agent, CellMap, GardeMap, AgentStats, GestionMap, QuotaMap, QuotaCellMap } from '../lib/types';
+import type { DayQuotas } from '../lib/quotas';
 import { requestTokenWithConsent } from './useAuth';
 
 export interface AppData {
-  agents: Agent[];
-  cells:  CellMap;
-  gardes: GardeMap;
-  stats:  Record<number, AgentStats>;
-  gestion: GestionMap;
+  agents:     Agent[];
+  cells:      CellMap;
+  gardes:     GardeMap;
+  stats:      Record<number, AgentStats>;
+  gestion:    GestionMap;
+  quotas:     QuotaMap;
+  quotaCells: QuotaCellMap;
 }
 
 function computeStats(agents: Agent[], cells: CellMap): Record<number, AgentStats> {
@@ -46,12 +49,13 @@ export function useAppData() {
         loadSaisonData(),
         loadGestionData(),
       ]);
-      const { cells, gardes } = parseSaisonData(rows, agents);
+      const { cells, gardes, quotas, quotaCells } = parseSaisonData(rows, agents);
       const stats  = computeStats(agents, cells);
-      const next   = { agents, cells, gardes, stats, gestion };
+      const next   = { agents, cells, gardes, stats, gestion, quotas, quotaCells };
       setData(prev => {
         if (prev && JSON.stringify(prev.cells) === JSON.stringify(next.cells)
-                 && JSON.stringify(prev.gestion) === JSON.stringify(next.gestion)) return prev;
+                 && JSON.stringify(prev.gestion) === JSON.stringify(next.gestion)
+                 && JSON.stringify(prev.quotas) === JSON.stringify(next.quotas)) return prev;
         return next;
       });
     } catch (e: any) {
@@ -121,5 +125,26 @@ export function useAppData() {
     }
   }, []);
 
-  return { data, loading, error, saving, saveError, needsAuth, setNeedsAuth, requestTokenWithConsent, refresh, updateDispo, updateAffect };
+  const updateQuota = useCallback(async (offset: number, q: DayQuotas) => {
+    if (!dataRef.current) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await saveQuotaValue(offset, dataRef.current.quotaCells, q);
+      setData(prev => {
+        if (!prev) return prev;
+        return { ...prev, quotas: { ...prev.quotas, [offset]: q } };
+      });
+    } catch (e: any) {
+      if (e.message === 'NEED_USER_GESTURE') {
+        setNeedsAuth(true);
+      } else {
+        setSaveError(e.message || 'Erreur lors de la sauvegarde du quota');
+      }
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
+  return { data, loading, error, saving, saveError, needsAuth, setNeedsAuth, requestTokenWithConsent, refresh, updateDispo, updateAffect, updateQuota };
 }
