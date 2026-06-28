@@ -138,12 +138,20 @@ export function useAuth() {
         auto_select: false,
       });
 
-      // Restaure la session utilisateur
+      // Restaure la session utilisateur et recalcule agentIdx depuis la liste live
       const saved = localStorage.getItem(USER_KEY);
       if (saved) {
         const savedUser = JSON.parse(saved) as CurrentUser;
-        setUser(savedUser);
-        // Tente aussi de restaurer le token OAuth silencieusement
+        // Recalcule agentIdx depuis la liste agents actuelle (protège contre les décalages de lignes)
+        import('../lib/sheets').then(({ findAgent }) => {
+          findAgent(savedUser.email).then(agentData => {
+            const freshUser = agentData
+              ? { ...savedUser, agentIdx: agentData.idx, agentName: agentData.name }
+              : savedUser;
+            setUser(freshUser);
+            localStorage.setItem(USER_KEY, JSON.stringify(freshUser));
+          }).catch(() => setUser(savedUser));
+        });
         if (!hasAccessToken()) {
           ensureOAuthToken(savedUser.email).catch(() => {});
         }

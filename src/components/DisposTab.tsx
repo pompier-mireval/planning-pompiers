@@ -16,7 +16,7 @@ export function DisposTab({ data, user, onUpdateDispo }: Props) {
   const [wStart, setWStart] = useState(() => weekStart(todayOffset()));
   const { agents, cells, gardes } = data;
 
-  const agent = agents.find(a => a.idx === user.agentIdx);
+  const agent = agents.find(a => a.email === user.email.toLowerCase());
   if (!agent) return (
     <div className="tab-content">
       <div className="error-banner">Agent introuvable. Vérifie que ton Gmail est bien enregistré dans l'onglet Agents.</div>
