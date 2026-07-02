@@ -71,6 +71,8 @@
   --amber-soft: #2E1E05;
   --red:        #F06060;
   --red-soft:   #331010;
+  --purple:        #9712e4;
+  --purple-soft:   #3c0a53;
   --blue:       #5AAAF0;
   --blue-soft:  #0D2035;
   --teal:       #30C8DA;
@@ -576,7 +578,7 @@ select { font-family: inherit; }
 
 .af-grr  { background: var(--blue-soft);   color: var(--blue); }
 .af-ast  { background: var(--amber-soft);  color: var(--amber); }
-.af-vpf  { background: var(--green-soft);  color: var(--green); }
+.af-vpf  { background: var(--purple-soft);  color: var(--purple); }
 .af-cond { background: var(--red-soft);    color: var(--red); }
 .af-other { background: var(--surface2);   color: var(--text-2); }
 
