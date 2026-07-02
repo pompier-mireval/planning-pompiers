@@ -44,8 +44,8 @@ export function SemaineTab({ data }: Props) {
     .sort((a, b) => {
       const ca = cells[dayOffset]?.[a.idx];
       const cb = cells[dayOffset]?.[b.idx];
-      const pa = ca?.affect ? affectPriority(ca.affect) : 5;
-      const pb = cb?.affect ? affectPriority(cb.affect) : 5;
+      const pa = ca?.affect ? affectPriority(ca.affect) : 6;
+      const pb = cb?.affect ? affectPriority(cb.affect) : 6;
       if (pa !== pb) return pa - pb;
       return a.name.localeCompare(b.name, 'fr');
     });
