@@ -75,7 +75,7 @@ export function affectClass(affect: string): string {
   if (a.startsWith('AST') || a.startsWith('GIFF')) return 'af-ast';
   if (a.startsWith('VPF'))                        return 'af-vpf';
   if (a.includes('COND') || a.includes('CDG'))    return 'af-cond';
-  if (a.startsWith('SOLL'))                       return 'af-soll';  // ← ajouté
+  if (a.startsWith('Sollicitable'))                       return 'af-soll';  // ← ajouté
   return 'af-other';
 }
 export const DISPO_LABELS: Record<string, string> = { J: 'Journée', M: 'Matin', AM: 'Après-midi' };
