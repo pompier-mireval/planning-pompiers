@@ -11,10 +11,11 @@ interface Props { data: AppData; }
 function affectPriority(affect: string): number {
   const a = affect.trim().toUpperCase();
   if (a.startsWith('GRR'))                     return 0;
-  if (a.startsWith('AST'))                     return 1;
-  if (a.startsWith('GFF') || a.startsWith('GIFF')) return 2;
-  if (a.includes('COND') || a.includes('CDG')) return 3;
-  return 4;
+  if (a.startsWith('VPF')) return 1;
+  if (a.startsWith('AST'))                     return 2;
+  if (a.startsWith('GFF') || a.startsWith('GIFF')) return 3;
+  if (a.includes('COND') || a.includes('CDG')) return 4;
+  return 5;
 }
 
 const DISPO_CLS: Record<string, string> = { J: 'cell-j', M: 'cell-m', AM: 'cell-am' };
