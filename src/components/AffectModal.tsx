@@ -23,7 +23,7 @@ const TYPE_GROUPS: { label: string; types: string[] }[] = [
   { label: 'GRR',         types: ['GRR Journée', 'GRR Matin', 'GRR Après-midi'] },
   { label: 'Astreinte',   types: ['AST Journée', 'AST Matin', 'AST Après-midi'] },
   { label: 'Autres',      types: ['VPF', 'GFF', 'Cond. CDG'] },
-  { label: '',            types: ['Sollicitable'] },
+  { label: '',            types: ['SOLLICITABLE'] },
 ];
 
 function QuotaChip({ fill, quota, cat }: { fill: number; quota: number; cat: string }) {

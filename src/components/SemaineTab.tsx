@@ -15,8 +15,8 @@ function affectPriority(affect: string): number {
   if (a.startsWith('AST'))                     return 2;
   if (a.startsWith('GFF') || a.startsWith('GIFF')) return 3;
   if (a.startsWith('COND') || a.startsWith('CDG')) return 4;
-  if (a.startsWith('Sollicitable')) return 5;
-  return 6;
+  if (a.startsWith('SOLLICITABLE')) return 5;
+  return 7;
 }
 
 const DISPO_CLS: Record<string, string> = { J: 'cell-j', M: 'cell-m', AM: 'cell-am' };
