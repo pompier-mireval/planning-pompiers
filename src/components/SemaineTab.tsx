@@ -14,8 +14,8 @@ function affectPriority(affect: string): number {
   if (a.startsWith('VPF'))                     return 1;
   if (a.startsWith('AST'))                     return 2;
   if (a.startsWith('GFF') || a.startsWith('GIFF')) return 3;
-  if (a.includes('COND') || a.includes('CDG')) return 4;
-  if (a.includes('Sollicitable')) return 5;
+  if (a.startsWith('COND') || a.startsWith('CDG')) return 4;
+  if (a.startsWith('Sollicitable')) return 5;
   return 6;
 }
 
