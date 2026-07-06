@@ -918,8 +918,8 @@ select { font-family: inherit; }
 }
 
 .cell-j  { background: var(--green-soft); color: var(--green); }
-.cell-m  { background: var(--blue-soft);  color: var(--blue); }
-.cell-am { background: var(--amber-soft); color: var(--amber); }
+.cell-m  { background: var(--green-soft);  color: var(--green); }
+.cell-am { background: var(--green-soft); color: var(--green); }
 
 /* ── Semaine vue jour ───────────────────────────────────────── */
 .semaine-agent-row {
