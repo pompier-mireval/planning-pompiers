@@ -84,8 +84,8 @@ export function EquityBarAst({ pctAstreinte, avgAstreinte, maxAstreinte }: Equit
 
 export function QualifBadges({ soff, cond, condVpf }: { soff: boolean; cond: boolean; condVpf: boolean }) {
   return <>
-    {soff    && <span className="badge badge-soff">S/Off</span>}
-    {cond    && <span className="badge badge-cond">Cond.</span>}
+    {soff    && <span className="badge badge-soff">CA FDF</span>}
+    {cond    && <span className="badge badge-cond">COD 2</span>}
     {condVpf && <span className="badge badge-condvpf">Cond. VPF</span>}
   </>;
 }
