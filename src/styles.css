@@ -1739,3 +1739,10 @@ select { font-family: inherit; }
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
+
+.dispo-row.dispo-past {
+  opacity: 0.5;
+}
+.dispo-row.dispo-past .dispo-select {
+  cursor: not-allowed;
+}

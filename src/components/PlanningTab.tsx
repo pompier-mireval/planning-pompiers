@@ -26,7 +26,7 @@ interface ModalState {
 
 // ── Barre de quota individuelle ───────────────────────────────
 function QuotaBar({ label, fill, quota }: { label: string; fill: number; quota: number }) {
-  if (quota === 0) return null; // pas défini pour ce jour → on n'affiche pas
+  if (quota === 0) return null;
   const pct  = Math.min(100, (fill / quota) * 100);
   const full  = fill >= quota;
   const cls   = full ? 'qbar-full' : fill > 0 ? 'qbar-partial' : 'qbar-empty';
@@ -114,6 +114,7 @@ export function PlanningTab({ data, onAffect, onUpdateQuota }: Props) {
 
   const dayCells   = cells[dayOffset] || {};
   const today      = todayOffset();
+  const isPastDay  = dayOffset < today; // ← jour déjà passé
   const dayQuotas  = quotas[dayOffset] ?? EMPTY_QUOTAS;
   const dayFill    = useMemo(() => computeDayFill(cells, dayOffset), [cells, dayOffset]);
   const hasQuotas  = !isEmptyQuotas(dayQuotas);
@@ -140,11 +141,13 @@ export function PlanningTab({ data, onAffect, onUpdateQuota }: Props) {
     });
 
   async function handleConfirm(type: string) {
+    if (isPastDay) return; // sécurité supplémentaire
     await onAffect(modal.dayOffset, modal.agentIdx, type);
     setModal(m => ({ ...m, open: false }));
   }
 
   async function handleDelete() {
+    if (isPastDay) return;
     await onAffect(modal.dayOffset, modal.agentIdx, '');
     setModal(m => ({ ...m, open: false }));
   }
@@ -197,6 +200,7 @@ export function PlanningTab({ data, onAffect, onUpdateQuota }: Props) {
       <div className="day-header">
         <span className="day-header-label">{dayLabel}</span>
         <EquipeBadge label={eq} />
+        {isPastDay && <span className="day-past-label">Jour passé</span>}
       </div>
 
       {/* ── Section quotas ── */}
@@ -277,11 +281,16 @@ export function PlanningTab({ data, onAffect, onUpdateQuota }: Props) {
             {a.cell?.affect ? (
               <AffectBadge
                 affect={a.cell.affect}
-                onClick={() => setModal({ open: true, agentIdx: a.idx, agentName: a.name, dispo: a.cell!.dispo, dayOffset, currentAffect: a.cell!.affect })}
+                onClick={() => {
+                  if (isPastDay) return;
+                  setModal({ open: true, agentIdx: a.idx, agentName: a.name, dispo: a.cell!.dispo, dayOffset, currentAffect: a.cell!.affect });
+                }}
               />
             ) : (
               <button
                 className="btn-assign"
+                disabled={isPastDay}
+                title={isPastDay ? 'Jour passé — non modifiable' : undefined}
                 onClick={() => setModal({ open: true, agentIdx: a.idx, agentName: a.name, dispo: a.cell!.dispo, dayOffset })}
               >
                 Affecter

@@ -15,8 +15,8 @@ interface Props {
 export function DisposTab({ data, user, onUpdateDispo }: Props) {
   const [wStart, setWStart] = useState(() => weekStart(todayOffset()));
   const { agents, cells, gardes } = data;
-
   const agent = agents.find(a => a.email === user.email.toLowerCase());
+
   if (!agent) return (
     <div className="tab-content">
       <div className="error-banner">Agent introuvable. Vérifie que ton Gmail est bien enregistré dans l'onglet Agents.</div>
@@ -53,15 +53,16 @@ export function DisposTab({ data, user, onUpdateDispo }: Props) {
       <div className="card">
         <div className="card-title">Disponibilités</div>
         {days.map(({ offset, date }) => {
-          const eq     = getEquipe(offset, gardes);
-          const cell   = cells[offset]?.[agent.idx] ?? {};
-          const dispo  = (cell as any).dispo  ?? '';
-          const affect = (cell as any).affect ?? '';
-          const label  = capitalize(date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }));
+          const eq      = getEquipe(offset, gardes);
+          const cell    = cells[offset]?.[agent.idx] ?? {};
+          const dispo   = (cell as any).dispo  ?? '';
+          const affect  = (cell as any).affect ?? '';
+          const label   = capitalize(date.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }));
           const isToday = offset === today;
+          const isPast  = offset < today;
 
           return (
-            <div key={offset} className={`dispo-row ${isToday ? 'dispo-today' : ''}`}>
+            <div key={offset} className={`dispo-row ${isToday ? 'dispo-today' : ''} ${isPast ? 'dispo-past' : ''}`}>
               <div className="dispo-day-info">
                 <span className="dispo-day-label">{label}</span>
                 <EquipeBadge label={eq} />
@@ -69,7 +70,13 @@ export function DisposTab({ data, user, onUpdateDispo }: Props) {
               <select
                 className="dispo-select"
                 value={dispo}
-                onChange={e => { console.log("[dispo] onChange offset:", offset, "agentIdx:", agent.idx, "value:", e.target.value, "cell:", JSON.stringify(cells[offset]?.[agent.idx])); onUpdateDispo(offset, agent.idx, e.target.value); }}
+                disabled={isPast}
+                title={isPast ? 'Jour passé — non modifiable' : undefined}
+                onChange={e => {
+                  if (isPast) return;
+                  console.log("[dispo] onChange offset:", offset, "agentIdx:", agent.idx, "value:", e.target.value, "cell:", JSON.stringify(cells[offset]?.[agent.idx]));
+                  onUpdateDispo(offset, agent.idx, e.target.value);
+                }}
               >
                 <option value="">Indispo</option>
                 <option value="J">Journée</option>
