@@ -103,7 +103,7 @@ export function affectCategory(affect: string): keyof DayFill | null {
 /** Coût en quota d'un type (GRR Matin/AM = 0.5, reste = 1) */
 export function affectCost(affect: string): number {
   const a = affect.trim().toUpperCase();
-  if (a === 'GRR MATIN' || a === 'GRR APRÈS-MIDI' || a === 'GRR APRES-MIDI') return 0.5;
+  if (a === 'GRR MATIN' || a === 'GRR APRÈS-MIDI' || a === 'GRR APRES-MIDI' || a === 'AST MATIN' || a === 'AST APRÈS-MIDI' || a === 'AST APRES-MIDI') return 0.5;
   return 1;
 }
 
