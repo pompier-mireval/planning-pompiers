@@ -73,7 +73,9 @@ export function computeDayFill(cells: CellMap, offset: number): DayFill {
       fill.grr += 1;
     } else if (a === 'GRR MATIN' || a === 'GRR APRÈS-MIDI' || a === 'GRR APRES-MIDI') {
       fill.grr += 0.5;
-    } else if (a.startsWith('AST') || a.startsWith('GIFF')) {
+    } else if (a === 'AST MATIN' || a === 'AST APRÈS-MIDI' || a === 'AST APRES-MIDI') {
+      fill.ast += 0.5;
+    } else if (a === 'AST JOURNÉE' || a === 'AST JOURNEE' || a === 'AST' || a.startsWith('GIFF')) {
       fill.ast += 1;
     } else if (a.startsWith('VPF')) {
       fill.vpf += 1;
