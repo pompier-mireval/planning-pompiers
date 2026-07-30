@@ -12,8 +12,8 @@ function affectPriority(affect: string): number {
   const a = affect.trim().toUpperCase();
   if (a.startsWith('GRR'))                     return 0;
   if (a.startsWith('VPF'))                     return 1;
-  if (a.startsWith('AST'))                     return 2;
-  if (a.startsWith('GFF') || a.startsWith('GIFF')) return 3;
+  if (a.startsWith('GFF') || a.startsWith('GIFF')) return 2;
+  if (a.startsWith('AST'))                     return 3;
   if (a.startsWith('COND') || a.startsWith('CDG')) return 4;
   if (a.startsWith('SOLLICITABLE')) return 5;
   return 7;
