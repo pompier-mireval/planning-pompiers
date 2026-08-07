@@ -9,7 +9,7 @@ import { EquipeBadge, WeekNav, QualifBadges } from './UI';
 interface Props {
   data: AppData;
   user: CurrentUser;
-  onUpdateDispo: (offset: number, agentIdx: number, value: string) => Promise<void>;
+  onUpdateDispo: (offset: number, agentIdx: number, value: string, clearAffect?: boolean) => Promise<void>;
 }
 
 interface PendingChange {
@@ -40,9 +40,9 @@ export function DisposTab({ data, user, onUpdateDispo }: Props) {
   }
   const initials = agent.name.slice(0, 2).toUpperCase();
 
-  const applyChange = (offset: number, value: string) => {
-    console.log("[dispo] applyChange offset:", offset, "agentIdx:", agent.idx, "value:", value);
-    onUpdateDispo(offset, agent.idx, value);
+  const applyChange = (offset: number, value: string, clearAffect?: boolean) => {
+    console.log("[dispo] applyChange offset:", offset, "agentIdx:", agent.idx, "value:", value, "clearAffect:", clearAffect);
+    onUpdateDispo(offset, agent.idx, value, clearAffect);
   };
 
   const handleChange = (offset: number, value: string, affect: string, dispo: string, label: string) => {
@@ -56,7 +56,8 @@ export function DisposTab({ data, user, onUpdateDispo }: Props) {
 
   const confirmPending = () => {
     if (pending) {
-      applyChange(pending.offset, pending.value);
+      // "Confirmer quand même" retire aussi l'affectation en plus de changer la dispo
+      applyChange(pending.offset, pending.value, true);
       setPending(null);
     }
   };
