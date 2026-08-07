@@ -71,7 +71,7 @@ export function useAppData() {
     return () => clearInterval(id);
   }, [refresh]);
 
-  const updateDispo = useCallback(async (offset: number, agentIdx: number, value: string) => {
+  const updateDispo = useCallback(async (offset: number, agentIdx: number, value: string, clearAffect?: boolean) => {
     if (!dataRef.current) return;
     const cell = dataRef.current.cells[offset]?.[agentIdx];
     if (!cell) {
@@ -81,10 +81,18 @@ export function useAppData() {
     setSaving(true);
     setSaveError(null);
     try {
-      await saveCellValue(cell.sheetRow, cell.dispoCol, value);
+      if (clearAffect && cell.affect) {
+        await Promise.all([
+          saveCellValue(cell.sheetRow, cell.dispoCol, value),
+          saveCellValue(cell.sheetRow, cell.affectCol, ''),
+        ]);
+      } else {
+        await saveCellValue(cell.sheetRow, cell.dispoCol, value);
+      }
       setData(prev => {
         if (!prev) return prev;
-        const newCells = { ...prev.cells, [offset]: { ...prev.cells[offset], [agentIdx]: { ...cell, dispo: value } } };
+        const updatedCell = clearAffect ? { ...cell, dispo: value, affect: '' } : { ...cell, dispo: value };
+        const newCells = { ...prev.cells, [offset]: { ...prev.cells[offset], [agentIdx]: updatedCell } };
         return { ...prev, cells: newCells, stats: computeStats(prev.agents, newCells) };
       });
     } catch (e: any) {
